@@ -1,12 +1,13 @@
 SRC=$(shell find . -name \*.cpp -type f -print)
-OBJ=$(patsubst %.cpp, %.o,$(SRC))
+OBJ=$(patsubst ./src/%.cpp, ./obj/%.o,$(SRC))
 NAME=ircserv
 FLAGS=-Wall -Werror -Wextra -std=c++98
 
 all:
+	mkdir -p $(shell dirname $(OBJ))
 	make $(NAME)
 
-%.o: %.cpp
+obj/%.o: src/%.cpp
 	c++ -c $(FLAGS) -g -o $@ $<
 
 $(NAME): $(OBJ)
