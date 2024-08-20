@@ -10,4 +10,6 @@
 # include <stdlib.h>
 # include <netinet/in.h>
 # include <sys/epoll.h>
+# include <cerrno>
+# include <map>
 # include "IrcServer.hpp"

@@ -31,6 +31,7 @@ bool IrcServer::setupServer()
 	if (bind(this->sockfd, (struct sockaddr*)&sAddr, sizeof(sAddr)) < 0)
 	{
 		std::cerr << "Error: Cannot bind the socket!" << std::endl;
+		close(this->sockfd);
 		return (false);
 	}
 
@@ -40,6 +41,7 @@ bool IrcServer::setupServer()
 	if (this->epollfd < 0)
 	{
 		std::cerr << "Error: Cannot create epoll!" << std::endl;
+		close(this->sockfd);
 		return (false);
 	}
 
@@ -49,6 +51,8 @@ bool IrcServer::setupServer()
 	if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, this->sockfd, &(this->ev)) < 0)
 	{
 		std::cerr << "Error: Cannot add socket to epoll!" << std::endl;
+		close(this->sockfd);
+		close(this->epollfd);
 		return (false);
 	}
 	std::cout << "Server started!" << std::endl;
@@ -60,7 +64,42 @@ void IrcServer::serverLoop()
 {
 	while (!g_stopSignal)
 	{
+		int nfds = epoll_wait(this->epollfd, this->events, MAX_CLIENTS, -1);
+		for (int i = 0; i < nfds; ++i)
+		{
+			if (this->events[i].data.fd == this->sockfd)
+			{
+				sockaddr_in	client;
+				socklen_t	cLen = sizeof(client);
+				int			newsockfd = accept(this->sockfd, (struct sockaddr*)&client, &cLen);
+				if (newsockfd < 0)
+				{
+					std::cerr << "Error: Can't accept client connection!" << std::endl;
+					continue ;
+				}
 
+				ev.events = EPOLLIN;
+				ev.data.fd = newsockfd;
+				if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, newsockfd, &ev) < 0)
+				{
+					std::cerr << "Error: Can't add client to epoll!" << std::endl;
+					close(newsockfd);
+				}
+				std::cout << "New client connected!" << std::endl;
+			}
+			else
+			{
+				char buffer[128] = {0};
+				int bytes_received = recv(this->events[i].data.fd, buffer, sizeof(buffer), 0);
+				if (bytes_received > 0)
+					std::cout << "Message recu de " << this->events[i].data.fd << ": " << buffer << std::endl;
+				else
+				{
+					std::cout << "Bye bye mon boug!" << std::endl;
+					close(this->events[i].data.fd);
+				}
+			}
+		}
 	}
 	this->stopServer();
 }
@@ -68,5 +107,10 @@ void IrcServer::serverLoop()
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
+	for (int i = 1; i < MAX_CLIENTS; i++)
+		if (this->events[i].data.fd != this->sockfd)
+			close(this->events[i].data.fd);
+	close(this->sockfd);
+	close(this->epollfd);
 	std::cout << "Server stopped!" << std::endl;
 }
