@@ -9,8 +9,8 @@ class IrcClient
 		std::string name;
 		std::string nickname;
 
-		IrcClient();
 	public:
+		IrcClient();
 		IrcClient(int id);
 		~IrcClient();
 

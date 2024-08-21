@@ -21,6 +21,7 @@ bool IrcServer::setupServer()
 	if (this->sockfd < 0)
 	{
 		std::cerr << "Error: Cannot create the socket!" << std::endl;
+		std::cerr << strerror(errno) << std::endl;
 		return (false);
 	}
 
@@ -31,6 +32,7 @@ bool IrcServer::setupServer()
 	if (bind(this->sockfd, (struct sockaddr*)&sAddr, sizeof(sAddr)) < 0)
 	{
 		std::cerr << "Error: Cannot bind the socket!" << std::endl;
+		std::cerr << strerror(errno) << std::endl;
 		close(this->sockfd);
 		return (false);
 	}
@@ -41,6 +43,7 @@ bool IrcServer::setupServer()
 	if (this->epollfd < 0)
 	{
 		std::cerr << "Error: Cannot create epoll!" << std::endl;
+		std::cerr << strerror(errno) << std::endl;
 		close(this->sockfd);
 		return (false);
 	}
@@ -51,6 +54,7 @@ bool IrcServer::setupServer()
 	if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, this->sockfd, &(this->ev)) < 0)
 	{
 		std::cerr << "Error: Cannot add socket to epoll!" << std::endl;
+		std::cerr << strerror(errno) << std::endl;
 		close(this->sockfd);
 		close(this->epollfd);
 		return (false);
@@ -75,17 +79,20 @@ void IrcServer::serverLoop()
 				if (newsockfd < 0)
 				{
 					std::cerr << "Error: Can't accept client connection!" << std::endl;
+					std::cerr << strerror(errno) << std::endl;
 					continue ;
 				}
 
-				ev.events = EPOLLIN;
-				ev.data.fd = newsockfd;
+				this->ev.events = EPOLLIN;
+				this->ev.data.fd = newsockfd;
 				if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, newsockfd, &ev) < 0)
 				{
 					std::cerr << "Error: Can't add client to epoll!" << std::endl;
+					std::cerr << strerror(errno) << std::endl;
 					close(newsockfd);
 				}
 				std::cout << "New client connected!" << std::endl;
+				this->clients[newsockfd] = IrcClient(newsockfd)
 			}
 			else
 			{
@@ -96,6 +103,7 @@ void IrcServer::serverLoop()
 				else
 				{
 					std::cout << "Bye bye mon boug!" << std::endl;
+					this->clients.erase(this->events[i].data.fd);
 					close(this->events[i].data.fd);
 				}
 			}
@@ -107,9 +115,10 @@ void IrcServer::serverLoop()
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
-	for (int i = 1; i < MAX_CLIENTS; i++)
-		if (this->events[i].data.fd != this->sockfd)
-			close(this->events[i].data.fd);
+	typedef std::map<int, IrcClient>::iterator it;
+	for (it iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
+		close(iterator->first);
+	this->clients.clear();
 	close(this->sockfd);
 	close(this->epollfd);
 	std::cout << "Server stopped!" << std::endl;
