@@ -1,8 +1,5 @@
 #pragma once
 
-# include "irc.hpp"
-# include "IrcClient.hpp"
-
 # define MAX_CLIENTS 10
 
 class IrcClient;
@@ -27,4 +24,6 @@ class IrcServer
 		bool	setupServer();
 		void	serverLoop();
 		void	stopServer();
+
+		void	interpret_message(int user_id, char buffer[256], int const& msglen);
 };

@@ -1,3 +1,7 @@
+# include "../../include/Irc.hpp"
+# include "../../include/IrcClient.hpp"
+# include "../../include/ACommand.hpp"
+# include "../../include/Commands.hpp"
 # include "../../include/IrcServer.hpp"
 
 IrcServer::IrcServer(int &port, std::string &password)
@@ -104,7 +108,8 @@ void IrcServer::serverLoop()
 
 				if (bytes_received > 0)
 				{
-					std::cout << "Message recu de " << user_fd << ": " << buffer << std::endl;
+					std::cout << "Message recu de [" << user_fd << "]: " << buffer << std::endl;
+					this->interpret_message(user_fd, buffer, bytes_received);
 				}
 				else
 				{
@@ -130,4 +135,25 @@ void IrcServer::stopServer()
 	close(this->sockfd);
 	close(this->epollfd);
 	std::cout << "Server stopped!" << std::endl;
+}
+
+void IrcServer::interpret_message(int user_id, char buffer[256], int const& msglen)
+{
+	std::string msg_part(buffer, msglen);
+	IrcClient* user = this->clients[user_id];
+	std::string cmdname;
+
+	// Should never happen
+	if (!user){
+		std::cerr << "Error: Interpret Message function can't get the client with id [" << user_id << "]" << std::endl; return ;}
+	
+	if (user->appendMessagePart(msg_part))
+	{
+		std::string lastmsg = user->getLastMessage();
+		cmdname = lastmsg.substr(0, lastmsg.find(' '));
+		// TODO -> Execute the function corresponding to 'cmdname'
+		user->clearLastMessage();
+	}
+	else
+		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
 }

@@ -2,14 +2,14 @@
 
 # include <iostream>
 # include <cstring>
-# include <sys/socket.h>
-# include <arpa/inet.h>
-# include <unistd.h>
 # include <csignal>
+# include <map>
+# include <unistd.h>
 # include <fcntl.h>
 # include <stdlib.h>
+# include <cerrno>
+
+# include <sys/socket.h>
+# include <arpa/inet.h>
 # include <netinet/in.h>
 # include <sys/epoll.h>
-# include <cerrno>
-# include <map>
-# include "IrcServer.hpp"

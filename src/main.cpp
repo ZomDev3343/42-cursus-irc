@@ -1,4 +1,5 @@
-# include "../include/irc.hpp"
+# include "../include/Irc.hpp"
+# include "../include/IrcServer.hpp"
 
 int	g_stopSignal = 0;
 
