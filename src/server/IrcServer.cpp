@@ -37,6 +37,8 @@ bool IrcServer::setupServer()
 		return (false);
 	}
 
+	int sockopt = 1;
+	setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(sockopt));
 	listen(this->sockfd, MAX_CLIENTS);
 
 	this->epollfd = epoll_create1(0);
@@ -92,17 +94,21 @@ void IrcServer::serverLoop()
 					close(newsockfd);
 				}
 				std::cout << "New client connected!" << std::endl;
-				this->clients[newsockfd] = IrcClient(newsockfd)
+				this->clients[newsockfd] = new IrcClient(newsockfd);
 			}
 			else
 			{
-				char buffer[128] = {0};
+				char buffer[256] = {0};
+				int	user_fd = this->events[i].data.fd;
 				int bytes_received = recv(this->events[i].data.fd, buffer, sizeof(buffer), 0);
+
 				if (bytes_received > 0)
+				{
 					std::cout << "Message recu de " << this->events[i].data.fd << ": " << buffer << std::endl;
+				}
 				else
 				{
-					std::cout << "Bye bye mon boug!" << std::endl;
+					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
 					this->clients.erase(this->events[i].data.fd);
 					close(this->events[i].data.fd);
 				}
@@ -115,10 +121,11 @@ void IrcServer::serverLoop()
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
-	typedef std::map<int, IrcClient>::iterator it;
-	for (it iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
+	for (std::map<int, IrcClient*>::iterator iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
+	{
 		close(iterator->first);
-	this->clients.clear();
+		delete iterator->second;
+	}
 	close(this->sockfd);
 	close(this->epollfd);
 	std::cout << "Server stopped!" << std::endl;

@@ -5,13 +5,20 @@
 class IrcClient
 {
 	private:
-		int			id;
-		std::string name;
-		std::string nickname;
+		int			_id;
+		std::string _name;
+		std::string _nickname;
 
-	public:
 		IrcClient();
+	public:
 		IrcClient(int id);
 		~IrcClient();
+
+		int const& getId() const;
+		std::string const& getName() const;
+		std::string const& getNickname() const;
+
+		void	setName(std::string newName);
+		void	setNickname(std::string newNickname);
 
 };

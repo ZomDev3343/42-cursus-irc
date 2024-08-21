@@ -16,7 +16,7 @@ class IrcServer
 		struct epoll_event			ev;
 		struct epoll_event			events[MAX_CLIENTS];
 		bool						stopped;
-		std::map<int, IrcClient>	clients;
+		std::map<int, IrcClient*>	clients;
 
 
 		IrcServer();
