@@ -29,6 +29,22 @@ bool IrcServer::setupServer()
 		return (false);
 	}
 
+
+	// Set the socket to non-blocking mode using fcntl
+	int flags = fcntl(this->sockfd, F_GETFL, 0);
+	if (flags == -1)
+	{
+		std::cerr << "Error: Cannot get socket flags!" << std::endl;
+		std::cerr << strerror(errno) << std::endl;
+		return (false);
+	}
+	if (fcntl(this->sockfd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		std::cerr << "Error: Cannot set socket to non-blocking mode!" << std::endl;
+		std::cerr << strerror(errno) << std::endl;
+		return (false);
+	}
+
 	sAddr.sin_family = AF_INET;
 	sAddr.sin_addr.s_addr = INADDR_ANY;
 	sAddr.sin_port = htons(this->port);
