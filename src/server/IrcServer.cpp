@@ -100,17 +100,18 @@ void IrcServer::serverLoop()
 			{
 				char buffer[256] = {0};
 				int	user_fd = this->events[i].data.fd;
-				int bytes_received = recv(this->events[i].data.fd, buffer, sizeof(buffer), 0);
+				int bytes_received = recv(user_fd, buffer, sizeof(buffer), 0);
 
 				if (bytes_received > 0)
 				{
-					std::cout << "Message recu de " << this->events[i].data.fd << ": " << buffer << std::endl;
+					std::cout << "Message recu de " << user_fd << ": " << buffer << std::endl;
 				}
 				else
 				{
 					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
-					this->clients.erase(this->events[i].data.fd);
-					close(this->events[i].data.fd);
+					delete this->clients[user_fd];
+					this->clients.erase(user_fd);
+					close(user_fd);
 				}
 			}
 		}
