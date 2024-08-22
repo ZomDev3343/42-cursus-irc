@@ -1,6 +1,5 @@
 # include "../../include/Irc.hpp"
 # include "../../include/IrcClient.hpp"
-# include "../../include/ACommand.hpp"
 # include "../../include/Commands.hpp"
 # include "../../include/IrcServer.hpp"
 
@@ -9,6 +8,7 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->port = port;
 	this->password = password;
 	this->stopped = false;
+	this->commands["PASS"] = Commands::pass_command;
 }
 
 IrcServer::~IrcServer()
@@ -149,9 +149,13 @@ void IrcServer::interpret_message(int user_id, char buffer[256], int const& msgl
 	
 	if (user->appendMessagePart(msg_part))
 	{
-		std::string lastmsg = user->getLastMessage();
-		cmdname = lastmsg.substr(0, lastmsg.find(' '));
+		std::string		lastmsg = user->getLastMessage();
+		CommandFunction	cmdf = NULL;
+		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n"));
 		// TODO -> Execute the function corresponding to 'cmdname'
+		cmdf = this->commands[cmdname];
+		if (cmdf != NULL)
+			cmdf(*this, *user, lastmsg);
 		user->clearLastMessage();
 	}
 	else

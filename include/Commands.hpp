@@ -1,8 +1,14 @@
 #pragma once
 
-class PassCommand : public ACommand {
+class IrcServer;
+class IrcClient;
+class Commands
+{
+	private:
+		Commands();
 	public:
-		PassCommand(IrcServer &server, IrcClient &user);
-		~PassCommand();
-		virtual void execute(std::string command);
+		static void	pass_command(IrcServer &server,
+			IrcClient &user, std::string command);
+		
+
 };

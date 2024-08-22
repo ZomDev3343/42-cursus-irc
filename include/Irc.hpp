@@ -8,6 +8,7 @@
 # include <fcntl.h>
 # include <stdlib.h>
 # include <cerrno>
+# include <functional>
 
 # include <sys/socket.h>
 # include <arpa/inet.h>
