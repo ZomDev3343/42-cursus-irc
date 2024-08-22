@@ -29,7 +29,6 @@ bool IrcServer::setupServer()
 		return (false);
 	}
 
-
 	// Set the socket to non-blocking mode using fcntl
 	int flags = fcntl(this->sockfd, F_GETFL, 0);
 	if (flags == -1)
@@ -162,7 +161,6 @@ void IrcServer::interpret_message(int user_id, char buffer[256], int const& msgl
 	// Should never happen
 	if (!user){
 		std::cerr << "Error: Interpret Message function can't get the client with id [" << user_id << "]" << std::endl; return ;}
-	
 	if (user->appendMessagePart(msg_part))
 	{
 		std::string		lastmsg = user->getLastMessage();
