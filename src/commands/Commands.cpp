@@ -17,8 +17,17 @@ void Commands::part_command(IrcServer &server, IrcClient &user, std::string comm
     std::string channelName = command.substr(command.find(" ") + 1, command.size());
     Channel *channel = server.getChannel(channelName);
 
+    std::cout << command << std::endl;
     if (!channel)
         return;
+    std::cout << "[IRC_REQUEST] :"
+              << user.getNickname()
+              << "!"
+              << user.getUsername()
+              << "@"
+              << user.getHostname()
+              << " PART :"
+              << channel->getName();
 
     channel->removeClient(&user);
     channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PART :" + channel->getName());

@@ -138,8 +138,8 @@ void IrcServer::serverLoop()
 				if (bytes_received > 0)
 				{
 					buffer[bytes_received] = '\0';
+					std::cout << "test" << std::endl;
 					std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
-
 					this->processMessage(user_fd, buffer);
 				}
 				else
