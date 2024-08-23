@@ -152,38 +152,32 @@ void IrcServer::serverLoop()
 	}
 }
 
-void IrcServer::processMessage(int user_fd, const char *message)
-{
-	std::string msg(message);
+void IrcServer::processMessage(int user_fd, const char *message) {
+    std::string msg(message);
 
-	if (msg.find("\r\n") == std::string::npos)
-	{
-		return;
-	}
+    if (msg.find("\r\n") == std::string::npos) {
+        this->clients[user_fd]->appendToBuffer(msg);
+        return;
+    }
 
-	std::vector<std::string> commands = splitCommands(msg);
-	for (const auto &command : commands)
-	{
-		this->interpret_message(user_fd, command.c_str(), command.size());
-	}
+    std::vector<std::string> commands = splitCommands(msg);
+    for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); ++it) {
+        this->interpret_message(user_fd, it->c_str(), it->size());
+    }
 }
 
-std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
-{
-	std::vector<std::string> commands;
-	std::istringstream stream(msg);
-	std::string command;
+std::vector<std::string> IrcServer::splitCommands(const std::string &msg) {
+    std::vector<std::string> commands;
+    std::istringstream stream(msg);
+    std::string command;
 
-	while (std::getline(stream, command))
-	{
-		if (!command.empty() && command.back() == '\r')
-		{
-			command.pop_back();
-		}
-		commands.push_back(command);
-	}
+    while (std::getline(stream, command)) {
+	if (command.find("\r\n") == std::string::npos)
+		command += "\r\n";
+        commands.push_back(command);
+    }
 
-	return commands;
+    return commands;
 }
 
 void IrcServer::stopServer()
@@ -199,7 +193,7 @@ void IrcServer::stopServer()
 	std::cout << "Server stopped!" << std::endl;
 }
 
-void IrcServer::interpret_message(int user_id, char buffer[256], int const &msglen)
+void IrcServer::interpret_message(int user_id, const char buffer[256], const int& msglen)
 {
 	std::string msg_part(buffer, msglen);
 	IrcClient *user = this->clients[user_id];

@@ -10,6 +10,10 @@
 #include <cerrno>
 #include <functional>
 
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>

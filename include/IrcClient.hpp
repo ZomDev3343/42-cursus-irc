@@ -15,6 +15,7 @@ private:
     std::string _nickname;
     std::string _username;
     std::string _lastmsg;
+    std::string buffer;
 
     bool _enregister;
 
@@ -40,6 +41,9 @@ public:
     bool appendMessagePart(std::string &msg_part);
     void sendMessage(std::string message);
     void clearLastMessage();
+    void appendToBuffer(const std::string& msg);
+    std::string getBuffer() const;
+    void clearBuffer();
 };
 
 #endif

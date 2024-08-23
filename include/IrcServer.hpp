@@ -31,8 +31,10 @@ public:
 	bool setupServer();
 	void serverLoop();
 	void stopServer();
+	void processMessage(int user_fd, const char* message);
+	std::vector<std::string> splitCommands(const std::string& msg);
 	std::vector<Channel *> getChannels();
 	Channel *getChannel(std::string name);
 
-	void interpret_message(int user_id, char buffer[256], int const &msglen);
+	void interpret_message(int user_id, const char buffer[256], const int& msglen);
 };

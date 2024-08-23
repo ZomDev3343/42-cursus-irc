@@ -104,3 +104,16 @@ std::string IrcClient::getUsername() const
 {
     return this->_username;
 }
+
+void IrcClient::appendToBuffer(const std::string& msg) {
+        buffer += msg;
+}
+
+std::string IrcClient::getBuffer() const {
+        return buffer;
+}
+
+void IrcClient::clearBuffer()
+{
+	buffer.clear();
+}

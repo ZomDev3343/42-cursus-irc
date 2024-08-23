@@ -33,13 +33,15 @@ void Commands::nick_command(IrcServer &server, IrcClient &user, std::string comm
     (void)server;
 
     std::string nick = command.substr(command.find(" ") + 1);
-    user.setNickname(nick);
+    std::cout << nick;
+    user.setNickname(nick.substr(0, nick.size() - 2));
 }
 
 void Commands::user_command(IrcServer &server, IrcClient &user, std::string command)
 {
     (void)server;
-
+    (void)user;
     std::cout << "User command starting..." << std::endl;
+    std::cout << command << std::endl;
     // user.setUsername(username);
 }
