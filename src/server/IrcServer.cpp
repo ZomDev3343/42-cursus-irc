@@ -1,9 +1,9 @@
-# include "../../include/Irc.hpp"
+#include "../../include/Irc.hpp"
 #include <netdb.h>
 #include <sys/socket.h>
-# include "../../include/IrcClient.hpp"
-# include "../../include/Commands.hpp"
-# include "../../include/IrcServer.hpp"
+#include "../../include/IrcClient.hpp"
+#include "../../include/Commands.hpp"
+#include "../../include/IrcServer.hpp"
 
 IrcServer::IrcServer(int &port, std::string &password)
 {
@@ -13,16 +13,16 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->commands["PASS"] = Commands::pass_command;
 	this->commands["JOIN"] = Commands::join_command;
 	this->commands["NICK"] = Commands::nick_command;
+	this->commands["USER"] = Commands::user_command;
 }
 
 IrcServer::~IrcServer()
 {
-
 }
 
 bool IrcServer::setupServer()
 {
-	sockaddr_in			sAddr;
+	sockaddr_in sAddr;
 
 	std::cout << "Server is starting..." << std::endl;
 	this->sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -52,7 +52,7 @@ bool IrcServer::setupServer()
 	sAddr.sin_addr.s_addr = INADDR_ANY;
 	sAddr.sin_port = htons(this->port);
 
-	if (bind(this->sockfd, (struct sockaddr*)&sAddr, sizeof(sAddr)) < 0)
+	if (bind(this->sockfd, (struct sockaddr *)&sAddr, sizeof(sAddr)) < 0)
 	{
 		std::cerr << "Error: Cannot bind the socket!" << std::endl;
 		std::cerr << strerror(errno) << std::endl;
@@ -91,69 +91,105 @@ bool IrcServer::setupServer()
 extern int g_stopSignal;
 void IrcServer::serverLoop()
 {
-    while (!g_stopSignal)
-    {
-        int nfds = epoll_wait(this->epollfd, this->events, MAX_CLIENTS, -1);
-        for (int i = 0; i < nfds; ++i)
-        {
-            if (this->events[i].data.fd == this->sockfd)
-            {
-                sockaddr_in client;
-                socklen_t cLen = sizeof(client);
-                int newsockfd = accept(this->sockfd, (struct sockaddr*)&client, &cLen);
-                if (newsockfd < 0)
-                {
-                    std::cerr << "Error: Can't accept client connection!" << std::endl;
-                    std::cerr << strerror(errno) << std::endl;
-                    continue;
-                }
+	while (!g_stopSignal)
+	{
+		int nfds = epoll_wait(this->epollfd, this->events, MAX_CLIENTS, -1);
+		for (int i = 0; i < nfds; ++i)
+		{
+			if (this->events[i].data.fd == this->sockfd)
+			{
+				sockaddr_in client;
+				socklen_t cLen = sizeof(client);
+				int newsockfd = accept(this->sockfd, (struct sockaddr *)&client, &cLen);
+				if (newsockfd < 0)
+				{
+					std::cerr << "Error: Can't accept client connection!" << std::endl;
+					std::cerr << strerror(errno) << std::endl;
+					continue;
+				}
 
-                // Récupération du hostname
-                char host[NI_MAXHOST];
-                if (getnameinfo((struct sockaddr*)&client, cLen, host, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
-                {
-                    close(newsockfd);
-                    continue;
-                }
+				char host[NI_MAXHOST];
+				if (getnameinfo((struct sockaddr *)&client, cLen, host, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
+				{
+					close(newsockfd);
+					continue;
+				}
 
-                this->ev.events = EPOLLIN;
-                this->ev.data.fd = newsockfd;
-                if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, newsockfd, &ev) < 0)
-                {
-                    std::cerr << "Error: Can't add client to epoll!" << std::endl;
-                    std::cerr << strerror(errno) << std::endl;
-                    close(newsockfd);
-                }
-		std::cout << "Nouveau client !" << std::endl;
-                this->clients[newsockfd] = new IrcClient(newsockfd, std::string(host));
-            }
-            else
-            {
-                char buffer[256] = {0};
-                int user_fd = this->events[i].data.fd;
-                int bytes_received = recv(user_fd, buffer, sizeof(buffer), 0);
+				this->ev.events = EPOLLIN;
+				this->ev.data.fd = newsockfd;
+				if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, newsockfd, &ev) < 0)
+				{
+					std::cerr << "Error: Can't add client to epoll!" << std::endl;
+					std::cerr << strerror(errno) << std::endl;
+					close(newsockfd);
+				}
 
-                if (bytes_received > 0)
-                {
-                    std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
-                    this->interpret_message(user_fd, buffer, bytes_received);
-                }
-                else
-                {
-                    std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
-                    delete this->clients[user_fd];
-                    this->clients.erase(user_fd);
-                    close(user_fd);
-                }
-            }
-        }
-    }
+				std::cout << "Nouveau client !" << std::endl;
+				this->clients[newsockfd] = new IrcClient(newsockfd, std::string(host));
+			}
+			else
+			{
+				char buffer[256] = {0};
+				int user_fd = this->events[i].data.fd;
+				int bytes_received = recv(user_fd, buffer, sizeof(buffer) - 1, 0);
+
+				if (bytes_received > 0)
+				{
+					buffer[bytes_received] = '\0';
+					std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
+
+					this->processMessage(user_fd, buffer);
+				}
+				else
+				{
+					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
+					delete this->clients[user_fd];
+					this->clients.erase(user_fd);
+					close(user_fd);
+				}
+			}
+		}
+	}
+}
+
+void IrcServer::processMessage(int user_fd, const char *message)
+{
+	std::string msg(message);
+
+	if (msg.find("\r\n") == std::string::npos)
+	{
+		return;
+	}
+
+	std::vector<std::string> commands = splitCommands(msg);
+	for (const auto &command : commands)
+	{
+		this->interpret_message(user_fd, command.c_str(), command.size());
+	}
+}
+
+std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
+{
+	std::vector<std::string> commands;
+	std::istringstream stream(msg);
+	std::string command;
+
+	while (std::getline(stream, command))
+	{
+		if (!command.empty() && command.back() == '\r')
+		{
+			command.pop_back();
+		}
+		commands.push_back(command);
+	}
+
+	return commands;
 }
 
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
-	for (std::map<int, IrcClient*>::iterator iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
+	for (std::map<int, IrcClient *>::iterator iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
 	{
 		close(iterator->first);
 		delete iterator->second;
@@ -163,21 +199,23 @@ void IrcServer::stopServer()
 	std::cout << "Server stopped!" << std::endl;
 }
 
-void IrcServer::interpret_message(int user_id, char buffer[256], int const& msglen)
+void IrcServer::interpret_message(int user_id, char buffer[256], int const &msglen)
 {
 	std::string msg_part(buffer, msglen);
-	IrcClient* user = this->clients[user_id];
+	IrcClient *user = this->clients[user_id];
 	std::string cmdname;
 
-	// Should never happen
-	if (!user){
-		std::cerr << "Error: Interpret Message function can't get the client with id [" << user_id << "]" << std::endl; return ;}
+	if (!user)
+	{
+		std::cerr << "Error: Interpret Message function can't get the client with id [" << user_id << "]" << std::endl;
+		return;
+	}
 	if (user->appendMessagePart(msg_part))
 	{
-		std::string		lastmsg = user->getLastMessage();
-		CommandFunction	cmdf = NULL;
+		std::string lastmsg = user->getLastMessage();
+		CommandFunction cmdf = NULL;
 		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n\0"));
-		// TODO -> Execute the function corresponding to 'cmdname'
+
 		cmdf = this->commands[cmdname];
 		if (cmdf != NULL)
 			cmdf(*this, *user, lastmsg);
@@ -187,14 +225,14 @@ void IrcServer::interpret_message(int user_id, char buffer[256], int const& msgl
 		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
 }
 
-std::vector<Channel*> IrcServer::getChannels()
+std::vector<Channel *> IrcServer::getChannels()
 {
 	return (this->_channels);
 }
 
 Channel *IrcServer::getChannel(std::string name)
 {
-	for (std::vector<Channel*>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+	for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
 	{
 		if ((*it)->getName() == name)
 			return (*it);

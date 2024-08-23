@@ -17,23 +17,22 @@ std::string Channel::getName()
 
 void Channel::broadcast(std::string message)
 {
-  for (std::vector<IrcClient*>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
+  for (std::vector<IrcClient *>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
   {
     (*it)->sendMessage(message);
   }
 }
 
-void Channel::addClient(IrcClient* client)
+void Channel::addClient(IrcClient *client)
 {
   this->_clients.push_back(client);
-  
 }
 
 void Channel::printClient()
 {
-	std::cout << "all client" << std::endl;
-	for (std::vector<IrcClient*>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
-  	{
-		std::cout << (*it)->getUsername() << std::endl;
-  	}
+  std::cout << "all client" << std::endl;
+  for (std::vector<IrcClient *>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
+  {
+    std::cout << (*it)->getUsername() << std::endl;
+  }
 }
