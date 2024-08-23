@@ -23,4 +23,8 @@ public:
 													 IrcClient &user, std::string command);
 	static void user_command(IrcServer &server,
 													 IrcClient &user, std::string command);
+	static void part_command(IrcServer &server,
+													 IrcClient &user, std::string command);
+	static void privmsg_command(IrcServer &server,
+															IrcClient &user, std::string command);
 };

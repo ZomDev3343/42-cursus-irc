@@ -31,10 +31,11 @@ public:
 	bool setupServer();
 	void serverLoop();
 	void stopServer();
-	void processMessage(int user_fd, const char* message);
-	std::vector<std::string> splitCommands(const std::string& msg);
+	void processMessage(int user_fd, const char *message);
+	std::vector<std::string> splitCommands(const std::string &msg);
 	std::vector<Channel *> getChannels();
+	IrcClient *getClient(std::string nickname);
 	Channel *getChannel(std::string name);
 
-	void interpret_message(int user_id, const char buffer[256], const int& msglen);
+	void interpret_message(int user_id, const char buffer[256], const int &msglen);
 };
