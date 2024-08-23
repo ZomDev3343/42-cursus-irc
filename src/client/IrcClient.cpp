@@ -61,8 +61,7 @@ void IrcClient::clearLastMessage()
 
 void IrcClient::sendMessage(std::string message)
 {
-    std::string formattedMessage = message + "\r\n";
-    std::cout << "Sending message to client " << this->_id << " : " << message << std::endl;
+    std::string formattedMessage = message;
     if (send(this->_id, formattedMessage.c_str(), formattedMessage.size(), 0) == -1)
     {
         std::cerr << "Error while sending message to client " << this->_id
