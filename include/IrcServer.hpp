@@ -2,9 +2,11 @@
 
 # define MAX_CLIENTS 10
 # include "Channel.hpp"
+#include <sys/epoll.h>
 
 class IrcClient;
 class IrcServer;
+class Channel;
 typedef void (*CommandFunction)(IrcServer &server, IrcClient &user, std::string command);
 class IrcServer
 {
@@ -28,7 +30,7 @@ class IrcServer
 		bool	setupServer();
 		void	serverLoop();
 		void	stopServer();
-		void  getChannels();
+		std::vector<Channel*> getChannels();
 		Channel *getChannel(std::string name);
 
 		void	interpret_message(int user_id, char buffer[256], int const& msglen);

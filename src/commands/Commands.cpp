@@ -12,15 +12,16 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
 
 void Commands::join_command(IrcServer &server, IrcClient &user, std::string command)
 {
-	(void)user;
-	(void)command;
+    std::string channelName = command.substr(command.find(" ") + 1, command.size());
 
-	Channel *Channel = server.getChannel(command.substr(command.find(" ") + 1, command.size()));
-	if (!Channel)
-	{
-		Channel *Channel = new Channel(command.substr(command.find(" ") + 1, command.size()));
-		server.getChannels().pushback(Channel);
-	}
-	
-	std::cout << "[user : " << user.getId() << "] join the channel :" << Channel.getName() << std::endl;
+    Channel* channel = server.getChannel(channelName);
+
+    if (!channel)
+    {
+        channel = new Channel(channelName);
+        server.getChannels().push_back(channel);
+    }
+
+    std::cout << "[user : " << user.getId() << "] join the channel :" << channel->getName() << std::endl;
 }
+
