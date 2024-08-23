@@ -20,8 +20,6 @@ class Commands
 			IrcClient &user, std::string command);
 		static void	nick_command(IrcServer &server,
 			IrcClient &user, std::string command);
-		static void	user_command(IrcServer &server,
-			IrcClient &user, std::string command);
 		
 
 };

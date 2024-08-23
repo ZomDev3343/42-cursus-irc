@@ -13,7 +13,6 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->commands["PASS"] = Commands::pass_command;
 	this->commands["JOIN"] = Commands::join_command;
 	this->commands["NICK"] = Commands::nick_command;
-	this->commands["USER"] = Commands::user_command;
 }
 
 IrcServer::~IrcServer()

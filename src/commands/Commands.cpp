@@ -28,36 +28,31 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
 
     std::cout << "user info : " << user.getId() << " "
               << user.getNickname() << " "
-              << user.getUsername() << " "
-              << user.getRealname() << std::endl;
+              << user.getUsername() << " " << user.getHostname() << std::endl;
     channel->broadcast(":ubuntu!ubuntu@" + user.getHostname() + " JOIN :" + channel->getName());
 }
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)
 {
 	(void) server;
-	std::cout << command << "lala" << std::endl << std::endl;
-    std::string nick = command.substr(command.find(" ") + 1);
-    user.setNickname(nick);
-    std::cout << "[user : " << user.getId() << "] changed their nickname to: " << nick << std::endl;
-}
 
-void Commands::user_command(IrcServer &server, IrcClient &user, std::string command)
-{
-    (void) server;
-    std::vector<std::string> args;
-    std::stringstream line(command);
-    std::string buf;
+    if (!user.enregister)
+    {
+        std::vector<std::string> args;
+        std::stringstream line(command);
+        std::string buf;
 
-    while (line >> buf)
-        args.push_back(buf);
+        while (line >> buf)
+            args.push_back(buf);
 
-    if (args.size() < 4) {
-        std::cerr << "Not enough arguments for USER command" << std::endl;
-        return;
+        user.setNickname(args[1]);
+        user.setUsername(args[3]);
     }
-
-    user.setUsername(args[0]);
-    user.setRealname(args[3]);
+    else
+    {
+        std::string nick = command.substr(command.find(" ") + 1);
+        user.setNickname(nick);
+        std::cout << "[user : " << user.getId() << "] changed their nickname to: " << nick << std::endl;
+    }
 }
 

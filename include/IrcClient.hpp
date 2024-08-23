@@ -3,18 +3,16 @@
 
 #include <iostream>
 #include <string>
-#include "Channel.hpp" // Assurez-vous d'inclure l'en-tête de Channel
+#include "Channel.hpp"
 
-class Channel; // Déclaration anticipée
+class Channel; 
 
 class IrcClient {
 private:
     int _id;
     std::string _hostname;
-    int _rankId;          // Déplacez _rankId après _hostname
     std::string _nickname;
     std::string _username;
-    std::string _realname;
     std::string _lastmsg;
     
     bool enregister;
@@ -29,15 +27,11 @@ public:
     std::string const& getNickname() const;
     std::string const& getLastMessage() const;
     std::string getUsername() const;
-    std::string getRealname() const;
 
     void setUsername(std::string username);
-    void setRealname(std::string realname);
     void setNickname(std::string newNickname);
     void setLastMessage(std::string newLastMessage);
     void setHostname(std::string newHost);
-    void setRankId(int newRankId);
-    int getRankId();
     void setChannel(Channel* channel);
     Channel* getChannel();
     bool appendMessagePart(std::string& msg_part);
