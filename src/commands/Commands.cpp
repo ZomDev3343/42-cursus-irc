@@ -24,12 +24,8 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
 
     channel->addClient(&user);
     std::cout << "[user : " << user.getId() << "] joined the channel: " << channel->getName() << std::endl;
-    channel->printClient();
 
-    std::cout << "user info : " << user.getId() << " "
-              << user.getNickname() << " "
-              << user.getUsername() << " " << user.getHostname() << std::endl;
-    channel->broadcast(":ubuntu!ubuntu@" + user.getHostname() + " JOIN :" + channel->getName());
+    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "ubuntu@" + user.getHostname() + " JOIN :" + channel->getName());
 }
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)
@@ -44,7 +40,8 @@ void Commands::nick_command(IrcServer &server, IrcClient &user, std::string comm
 
         while (line >> buf)
             args.push_back(buf);
-
+	
+	std::cout << args[1] << " jriuejgei " << args[3] << std::endl;
         user.setNickname(args[1]);
         user.setUsername(args[3]);
     }
