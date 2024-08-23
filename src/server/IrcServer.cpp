@@ -9,6 +9,7 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->password = password;
 	this->stopped = false;
 	this->commands["PASS"] = Commands::pass_command;
+	this->commands["JOIN"] = Commands::join_command;
 }
 
 IrcServer::~IrcServer()
@@ -165,7 +166,7 @@ void IrcServer::interpret_message(int user_id, char buffer[256], int const& msgl
 	{
 		std::string		lastmsg = user->getLastMessage();
 		CommandFunction	cmdf = NULL;
-		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n"));
+		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n\0"));
 		// TODO -> Execute the function corresponding to 'cmdname'
 		cmdf = this->commands[cmdname];
 		if (cmdf != NULL)
@@ -174,4 +175,19 @@ void IrcServer::interpret_message(int user_id, char buffer[256], int const& msgl
 	}
 	else
 		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
+}
+
+std::vector<Channel*> IrcServer::getChannels()
+{
+	return (this->_channels);
+}
+
+Channel *IrcServer::getChannel(std::string name)
+{
+	for (std::vector<Channel*>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+	{
+		if ((*it)->getName() == name)
+			return (*it);
+	}
+	return (NULL);
 }

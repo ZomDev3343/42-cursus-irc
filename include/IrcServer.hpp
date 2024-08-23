@@ -1,6 +1,7 @@
 #pragma once
 
 # define MAX_CLIENTS 10
+# include "Channel.hpp"
 
 class IrcClient;
 class IrcServer;
@@ -17,6 +18,7 @@ class IrcServer
 		bool									stopped;
 		std::map<int, IrcClient*>				clients;
 		std::map<std::string, CommandFunction>	commands;
+		std::vector<Channel*>					_channels;
 
 		IrcServer();
 	public:
@@ -26,6 +28,8 @@ class IrcServer
 		bool	setupServer();
 		void	serverLoop();
 		void	stopServer();
+		void  getChannels();
+		Channel *getChannel(std::string name);
 
 		void	interpret_message(int user_id, char buffer[256], int const& msglen);
 };
