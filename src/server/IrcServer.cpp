@@ -129,9 +129,7 @@ void IrcServer::serverLoop()
 				else
 				{
 					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
-					delete this->clients[user_fd];
-					this->clients.erase(user_fd);
-					close(user_fd);
+					this->close_client_connection(user_fd);
 				}
 			}
 		}
@@ -166,12 +164,33 @@ void IrcServer::interpret_message(int user_id, char buffer[256], int const& msgl
 		std::string		lastmsg = user->getLastMessage();
 		CommandFunction	cmdf = NULL;
 		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n"));
-		// TODO -> Execute the function corresponding to 'cmdname'
-		cmdf = this->commands[cmdname];
-		if (cmdf != NULL)
-			cmdf(*this, *user, lastmsg);
-		user->clearLastMessage();
+		if (!user->isLogged() && cmdname != "PASS")
+			this->close_client_connection(user_id, ERROR_WRONG_PASSWORD);
+		else
+		{
+			cmdf = this->commands[cmdname];
+			if (cmdf != NULL)
+				cmdf(*this, *user, lastmsg);
+			user->clearLastMessage();
+		}
 	}
 	else
 		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
+}
+
+void IrcServer::close_client_connection(int user_id, std::string reason)
+{
+	if (this->clients[user_id] != NULL)
+	{
+		delete this->clients[user_id];
+		this->clients.erase(user_id);
+		close(user_id);
+		if (!reason.empty())
+			std::cout << "Kicked User " << user_id << " because " << reason << std::endl;
+	}
+}
+
+std::string const& IrcServer::getPassword() const
+{
+	return this->password;
 }

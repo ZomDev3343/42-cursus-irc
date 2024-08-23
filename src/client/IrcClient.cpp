@@ -4,6 +4,7 @@
 IrcClient::IrcClient(int id)
 {
 	this->_id = id;
+	this->_isLogged = false;
 }
 
 IrcClient::~IrcClient()
@@ -61,4 +62,14 @@ bool IrcClient::appendMessagePart(std::string &msg_part)
 void	IrcClient::clearLastMessage()
 {
 	this->_lastmsg.clear();
+}
+
+bool	IrcClient::isLogged() const
+{
+	return this->_isLogged;
+}
+
+void	IrcClient::setLogged()
+{
+	this->_isLogged = true;
 }

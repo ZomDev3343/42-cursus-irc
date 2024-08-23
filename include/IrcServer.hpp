@@ -19,13 +19,18 @@ class IrcServer
 		std::map<std::string, CommandFunction>	commands;
 
 		IrcServer();
+
+		void	interpret_message(int user_id, char buffer[256], int const& msglen);
+
 	public:
 		IrcServer(int &port, std::string &password);
 		~IrcServer();
+
+		std::string const& getPassword() const;
 
 		bool	setupServer();
 		void	serverLoop();
 		void	stopServer();
 
-		void	interpret_message(int user_id, char buffer[256], int const& msglen);
+		void	close_client_connection(int user_id, std::string reason = "");
 };
