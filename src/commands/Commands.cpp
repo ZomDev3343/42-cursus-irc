@@ -23,5 +23,8 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     }
 
     std::cout << "[user : " << user.getId() << "] join the channel :" << channel->getName() << std::endl;
+
+    channel->addClient(&user);
+    channel->broadcast("User " + user.getId() + " join the channel");
 }
 

@@ -22,6 +22,7 @@ class Channel
     ~Channel();
 
     void broadcast(std::string message);
+    void addClient(IrcClient* client);
 
     std::string getName();
 

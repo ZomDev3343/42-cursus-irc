@@ -22,3 +22,9 @@ void Channel::broadcast(std::string message)
     (*it)->sendMessage(message);
   }
 }
+
+void Channel::addClient(IrcClient* client)
+{
+  this->_clients.push_back(client);
+  
+}
