@@ -15,7 +15,8 @@ private:
     std::string _username;
     std::string _lastmsg;
     
-    bool enregister;
+    bool _enregister;
+
     Channel* _channel;
 
 public:
@@ -34,6 +35,7 @@ public:
     void setHostname(std::string newHost);
     void setChannel(Channel* channel);
     Channel* getChannel();
+    bool is_enregister();
     bool appendMessagePart(std::string& msg_part);
     void sendMessage(std::string message);
     void clearLastMessage();

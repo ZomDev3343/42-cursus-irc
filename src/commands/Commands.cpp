@@ -36,7 +36,7 @@ void Commands::nick_command(IrcServer &server, IrcClient &user, std::string comm
 {
 	(void) server;
 
-    if (!user.enregister)
+    if (!user.is_enregister())
     {
         std::vector<std::string> args;
         std::stringstream line(command);

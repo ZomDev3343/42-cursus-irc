@@ -73,6 +73,10 @@ Channel* IrcClient::getChannel() {
     return this->_channel;
 }
 
+bool IrcClient::is_enregister(){
+    return this->_enregister;
+}
+
 void IrcClient::setUsername(std::string username) {
     this->_username = username;
 }
