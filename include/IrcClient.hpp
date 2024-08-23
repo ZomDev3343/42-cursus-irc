@@ -8,14 +8,16 @@ class IrcClient
 		std::string _name;
 		std::string _nickname;
 		std::string _lastmsg;
+		std::string _host;
 
 		IrcClient();
 	public:
-		IrcClient(int id);
+		IrcClient(int id, std::string host);
 		~IrcClient();
 
 		int const& getId() const;
 		std::string const& getName() const;
+		std::string const& getHost() const;
 		std::string const& getNickname() const;
 		std::string const& getLastMessage() const;
 

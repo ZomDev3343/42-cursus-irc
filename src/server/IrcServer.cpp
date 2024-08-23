@@ -1,4 +1,6 @@
 # include "../../include/Irc.hpp"
+#include <netdb.h>
+#include <sys/socket.h>
 # include "../../include/IrcClient.hpp"
 # include "../../include/Commands.hpp"
 # include "../../include/IrcServer.hpp"
@@ -88,56 +90,63 @@ bool IrcServer::setupServer()
 extern int g_stopSignal;
 void IrcServer::serverLoop()
 {
-	while (!g_stopSignal)
-	{
-		int nfds = epoll_wait(this->epollfd, this->events, MAX_CLIENTS, -1);
-		for (int i = 0; i < nfds; ++i)
-		{
-			if (this->events[i].data.fd == this->sockfd)
-			{
-				sockaddr_in	client;
-				socklen_t	cLen = sizeof(client);
-				int			newsockfd = accept(this->sockfd, (struct sockaddr*)&client, &cLen);
-				if (newsockfd < 0)
-				{
-					std::cerr << "Error: Can't accept client connection!" << std::endl;
-					std::cerr << strerror(errno) << std::endl;
-					continue ;
-				}
+    while (!g_stopSignal)
+    {
+        int nfds = epoll_wait(this->epollfd, this->events, MAX_CLIENTS, -1);
+        for (int i = 0; i < nfds; ++i)
+        {
+            if (this->events[i].data.fd == this->sockfd)
+            {
+                sockaddr_in client;
+                socklen_t cLen = sizeof(client);
+                int newsockfd = accept(this->sockfd, (struct sockaddr*)&client, &cLen);
+                if (newsockfd < 0)
+                {
+                    std::cerr << "Error: Can't accept client connection!" << std::endl;
+                    std::cerr << strerror(errno) << std::endl;
+                    continue;
+                }
 
-				this->ev.events = EPOLLIN;
-				this->ev.data.fd = newsockfd;
-				if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, newsockfd, &ev) < 0)
-				{
-					std::cerr << "Error: Can't add client to epoll!" << std::endl;
-					std::cerr << strerror(errno) << std::endl;
-					close(newsockfd);
-				}
-				std::cout << "New client connected!" << std::endl;
-				this->clients[newsockfd] = new IrcClient(newsockfd);
-			}
-			else
-			{
-				char buffer[256] = {0};
-				int	user_fd = this->events[i].data.fd;
-				int bytes_received = recv(user_fd, buffer, sizeof(buffer), 0);
+                // Récupération du hostname
+                char host[NI_MAXHOST];
+                if (getnameinfo((struct sockaddr*)&client, cLen, host, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
+                {
+                    close(newsockfd);
+                    continue;
+                }
 
-				if (bytes_received > 0)
-				{
-					std::cout << "Message recu de [" << user_fd << "]: " << buffer << std::endl;
-					this->interpret_message(user_fd, buffer, bytes_received);
-				}
-				else
-				{
-					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
-					delete this->clients[user_fd];
-					this->clients.erase(user_fd);
-					close(user_fd);
-				}
-			}
-		}
-	}
-	this->stopServer();
+                this->ev.events = EPOLLIN;
+                this->ev.data.fd = newsockfd;
+                if (epoll_ctl(this->epollfd, EPOLL_CTL_ADD, newsockfd, &ev) < 0)
+                {
+                    std::cerr << "Error: Can't add client to epoll!" << std::endl;
+                    std::cerr << strerror(errno) << std::endl;
+                    close(newsockfd);
+                }
+		std::cout << "Nouveau client !" << std::endl;
+                this->clients[newsockfd] = new IrcClient(newsockfd, std::string(host));
+            }
+            else
+            {
+                char buffer[256] = {0};
+                int user_fd = this->events[i].data.fd;
+                int bytes_received = recv(user_fd, buffer, sizeof(buffer), 0);
+
+                if (bytes_received > 0)
+                {
+                    std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
+                    this->interpret_message(user_fd, buffer, bytes_received);
+                }
+                else
+                {
+                    std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
+                    delete this->clients[user_fd];
+                    this->clients.erase(user_fd);
+                    close(user_fd);
+                }
+            }
+        }
+    }
 }
 
 void IrcServer::stopServer()

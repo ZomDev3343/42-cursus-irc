@@ -1,8 +1,9 @@
 # include "../../include/Irc.hpp"
 # include "../../include/IrcClient.hpp"
 
-IrcClient::IrcClient(int id)
+IrcClient::IrcClient(int id, std::string host)
 {
+	this->_host = host;
 	this->_id = id;
 }
 
@@ -20,6 +21,12 @@ std::string const &IrcClient::getName() const
 {
 	return this->_name;
 }
+
+std::string const &IrcClient::getHost() const
+{
+        return this->_host;
+}
+
 
 std::string const &IrcClient::getNickname() const
 {
@@ -65,8 +72,9 @@ void	IrcClient::clearLastMessage()
 
 void IrcClient::sendMessage(std::string message)
 {
+	std::string formattedMessage = message + "\r\n";
 	std::cout << "Sending message to client " << this->_id << " : " << message << std::endl;
-	if (send(this->_id, message.c_str(), message.size(), 0) == -1)
+	if (send(this->_id, formattedMessage.c_str(), formattedMessage.size(), 0) == -1)
 	{
 		std::cerr << "Error while sending message to client " << this->_id << " : " << strerror(errno) << std::endl;
 	}
