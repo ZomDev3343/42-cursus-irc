@@ -5,10 +5,11 @@ class IrcClient
 	private:
 		int			_id;
 		int			_rankId;
-		std::string _name;
 		std::string _nickname;
+		std::string _username;
+		std::string _realname;
 		std::string _lastmsg;
-		std::string _host;
+		std::string _hostname;
 
 		IrcClient();
 	public:
@@ -23,6 +24,8 @@ class IrcClient
 
 		void	setName(std::string newName);
 		void	setNickname(std::string newNickname);
+		void	setLastMessage(std::string newLastMessage);
+		void	setHost(std::string newHost);
 		bool	appendMessagePart(std::string &msg_part);
 		void  sendMessage(std::string message);
 		void	clearLastMessage();

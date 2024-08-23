@@ -79,3 +79,53 @@ void IrcClient::sendMessage(std::string message)
 		std::cerr << "Error while sending message to client " << this->_id << " : " << strerror(errno) << std::endl;
 	}
 }	
+
+void IrcClient::setHost(std::string newHost)
+{
+	this->_host = newHost;
+}
+
+void IrcClient::setLastMessage(std::string newLastMessage)
+{
+	this->_lastmsg = newLastMessage;
+}
+
+void IrcClient::setRankId(int newRankId)
+{
+	this->_rankId = newRankId;
+}
+
+int IrcClient::getRankId()
+{
+	return this->_rankId;
+}
+
+void IrcClient::setChannel(Channel *channel)
+{
+	this->_channel = channel;
+}
+
+Channel *IrcClient::getChannel()
+{
+	return this->_channel;
+}
+
+void IrcClient::setUsername(std::string username)
+{
+	this->_username = username;
+}
+
+std::string IrcClient::getUsername()
+{
+	return this->_username;
+}
+
+void IrcClient::setRealname(std::string realname)
+{
+	this->_realname = realname;
+}
+
+std::string IrcClient::getRealname()
+{
+	return this->_realname;
+}
