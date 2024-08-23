@@ -28,3 +28,12 @@ void Channel::addClient(IrcClient* client)
   this->_clients.push_back(client);
   
 }
+
+void Channel::printClient()
+{
+	std::cout << "all client" << std::endl;
+	for (std::vector<IrcClient*>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
+  	{
+		std::cout << (*it)->getName() << std::endl;
+  	}
+}

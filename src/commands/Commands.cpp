@@ -1,5 +1,6 @@
 # include "../../include/Irc.hpp"
 # include "../../include/Commands.hpp"
+#include <sstream>
 
 void Commands::pass_command(IrcServer &server, IrcClient &user, std::string command)
 {
@@ -13,7 +14,6 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
 void Commands::join_command(IrcServer &server, IrcClient &user, std::string command)
 {
     std::string channelName = command.substr(command.find(" ") + 1, command.size());
-
     Channel* channel = server.getChannel(channelName);
 
     if (!channel)
@@ -23,8 +23,9 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     }
 
     std::cout << "[user : " << user.getId() << "] join the channel :" << channel->getName() << std::endl;
-
-    channel->addClient(&user);
-    channel->broadcast("User " + user.getId() + " join the channel");
+    std::stringstream ss;
+    ss << user.getId();
+    std::string userIdStr = ss.str();
+    channel->printClient();
+    channel->broadcast("User " + userIdStr + " joined the channel");
 }
-
