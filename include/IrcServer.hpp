@@ -31,6 +31,7 @@ public:
 	bool setupServer();
 	void serverLoop();
 	void stopServer();
+	void addChannel(Channel* channel);
 	void processMessage(int user_fd, const char *message);
 	std::vector<std::string> splitCommands(const std::string &msg);
 	std::vector<Channel *> getChannels();

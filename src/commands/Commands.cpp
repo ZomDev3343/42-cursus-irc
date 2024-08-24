@@ -15,9 +15,11 @@ void Commands::part_command(IrcServer &server, IrcClient &user, std::string comm
 {
     (void)server;
     std::string channelName = command.substr(command.find(" ") + 1, command.size());
-    Channel *channel = server.getChannel(channelName);
+    channelName = channelName.substr(0, command.find(" ") + 1);
+    std::cout << "channel : " << channelName << std::endl;
+    Channel *channel = server.getChannel(channelName + "\r\n");
 
-    std::cout << command << std::endl;
+    std::cout << "command : " << command << std::endl;
     if (!channel)
         return;
     std::cout << "[IRC_REQUEST] :"
@@ -66,7 +68,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     if (!channel)
     {
         channel = new Channel(channelName);
-        server.getChannels().push_back(channel);
+        server.addChannel(channel);
         channel->addOperator(&user);
     }
 

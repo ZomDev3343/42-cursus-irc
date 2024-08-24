@@ -138,7 +138,7 @@ void IrcServer::serverLoop()
 				if (bytes_received > 0)
 				{
 					buffer[bytes_received] = '\0';
-					std::cout << "test" << std::endl;
+					std::cout << buffer << std::endl;
 					std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
 					this->processMessage(user_fd, buffer);
 				}
@@ -231,10 +231,17 @@ std::vector<Channel *> IrcServer::getChannels()
 	return (this->_channels);
 }
 
+void	IrcServer::addChannel(Channel* channel)
+{
+	this->_channels.push_back(channel);
+}
+
 Channel *IrcServer::getChannel(std::string name)
 {
 	for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
 	{
+		std::cout << "chan get name : " << (*it)->getName().size();
+		std::cout << "chan comp name :" << name.size();
 		if ((*it)->getName() == name)
 			return (*it);
 	}
