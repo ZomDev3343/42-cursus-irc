@@ -240,8 +240,6 @@ Channel *IrcServer::getChannel(std::string name)
 {
 	for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
 	{
-		std::cout << "chan get name : " << (*it)->getName().size();
-		std::cout << "chan comp name :" << name.size();
 		if ((*it)->getName() == name)
 			return (*it);
 	}

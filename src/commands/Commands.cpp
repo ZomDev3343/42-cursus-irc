@@ -13,13 +13,15 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
 
 void Commands::part_command(IrcServer &server, IrcClient &user, std::string command)
 {
-    (void)server;
-    std::string channelName = command.substr(command.find(" ") + 1, command.size());
-    channelName = channelName.substr(1, command.find(" ") + 1);
-    std::cout << "channel : " << channelName << std::endl;
+    size_t spacePos = command.find(" ");
+    if (spacePos == std::string::npos)
+        return;
+    std::string channelName = command.substr(spacePos + 1);
+    if (channelName.empty() || channelName[0] != '#')
+        return;
+    channelName = channelName.substr(1);
+    channelName = channelName.substr(0, channelName.find_first_of(" \r\n"));
     Channel *channel = server.getChannel(channelName);
-
-    std::cout << "command : " << command << std::endl;
     if (!channel)
         return;
     std::cout << "[IRC_REQUEST] :"
@@ -29,10 +31,9 @@ void Commands::part_command(IrcServer &server, IrcClient &user, std::string comm
               << "@"
               << user.getHostname()
               << " PART :"
-              << channel->getName();
-
+              << channel->getName() << std::endl;
     channel->removeClient(&user);
-    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PART :" + channel->getName() + "\r\n");
+    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PART :#" + channel->getName() + "\r\n");
 }
 
 void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string command)
@@ -62,12 +63,16 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
 
 void Commands::join_command(IrcServer &server, IrcClient &user, std::string command)
 {
-    std::string channelName = command.substr(command.find(" ") + 1, command.size());
-    if (channelName[0] != '#')
+    size_t spacePos = command.find(" ");
+    if (spacePos == std::string::npos)
         return;
-    channelName = channelName.substr(1, channelName.size() - 3);
-    channelName[channelName.size()] = '\0';
+    std::string channelName = command.substr(spacePos + 1);
+    if (channelName.empty() || channelName[0] != '#')
+        return;
+    channelName = channelName.substr(1);
+    channelName = channelName.substr(0, channelName.find_first_of(" \r\n"));
     Channel *channel = server.getChannel(channelName);
+    std::cout << "channel name join : " << channelName << std::endl;
 
     if (!channel)
     {
@@ -75,9 +80,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
         server.addChannel(channel);
         channel->addOperator(&user);
     }
-
     channel->addClient(&user);
-
     std::cout << "[IRC_REQUEST] :"
               << user.getNickname()
               << "!"
@@ -85,8 +88,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
               << "@"
               << user.getHostname()
               << " JOIN :"
-              << channel->getName();
-
+              << channel->getName() << std::endl;
     channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " JOIN :" + channel->getName() + "\r\n");
 }
 
