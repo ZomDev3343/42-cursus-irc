@@ -15,9 +15,9 @@ void Commands::part_command(IrcServer &server, IrcClient &user, std::string comm
 {
     (void)server;
     std::string channelName = command.substr(command.find(" ") + 1, command.size());
-    channelName = channelName.substr(0, command.find(" ") + 1);
+    channelName = channelName.substr(1, command.find(" ") + 1);
     std::cout << "channel : " << channelName << std::endl;
-    Channel *channel = server.getChannel(channelName + "\r\n");
+    Channel *channel = server.getChannel(channelName);
 
     std::cout << "command : " << command << std::endl;
     if (!channel)
@@ -32,7 +32,7 @@ void Commands::part_command(IrcServer &server, IrcClient &user, std::string comm
               << channel->getName();
 
     channel->removeClient(&user);
-    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PART :" + channel->getName());
+    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PART :" + channel->getName() + "\r\n");
 }
 
 void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string command)
@@ -63,6 +63,10 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
 void Commands::join_command(IrcServer &server, IrcClient &user, std::string command)
 {
     std::string channelName = command.substr(command.find(" ") + 1, command.size());
+    if (channelName[0] != '#')
+        return;
+    channelName = channelName.substr(1, channelName.size() - 3);
+    channelName[channelName.size()] = '\0';
     Channel *channel = server.getChannel(channelName);
 
     if (!channel)
@@ -83,7 +87,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
               << " JOIN :"
               << channel->getName();
 
-    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " JOIN :" + channel->getName());
+    channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " JOIN :" + channel->getName() + "\r\n");
 }
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)
