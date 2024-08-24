@@ -18,4 +18,4 @@
 
 # define ERROR_WRONG_PASSWORD "WRONG PASSWORD"
 
-std::vector<std::string> split_string(std::string str);
+std::vector<std::string> split_string(std::string str, std::string delimiter);

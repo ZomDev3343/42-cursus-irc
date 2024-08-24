@@ -9,7 +9,7 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
 
 	std::cout << "Pass Command starting..." << std::endl;
 	
-	parts = split_string(command);
+	parts = split_string(command, " \n");
 	
 	std::cout << "Command Parts" << std::endl;
 	for (std::vector<std::string>::iterator it = parts.begin();

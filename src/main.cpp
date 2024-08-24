@@ -9,13 +9,13 @@ static void onStopSignal(int signal)
 		g_stopSignal = 1;
 }
 
-std::vector<std::string> split_string(std::string str)
+std::vector<std::string> split_string(std::string str, std::string delimiter)
 {
 	std::vector<std::string>	res;
 	size_t						pos = 0;
     std::string					token;
 
-    while ((pos = str.find_first_of(" \n")) != std::string::npos) {
+    while ((pos = str.find_first_of(delimiter)) != std::string::npos) {
         token = str.substr(0, pos);
         res.push_back(token);
         str.erase(0, pos + 1);
