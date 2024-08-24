@@ -27,8 +27,8 @@ void Commands::part_command(IrcServer &server, IrcClient &user, std::string comm
               << user.getNickname()
               << " PART "
               << channel->getName() << std::endl;
+    channel->broadcast(":" + user.getNickname() + " PART " + channelName + "\r\n");
     channel->removeClient(&user);
-    channel->broadcast(":" + user.getNickname() + " PART " + channel->getName() + "\r\n");
 }
 
 void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string command)
@@ -43,7 +43,7 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
         if (!channel)
             return;
 
-        channel->broadcast(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PRIVMSG " + channel->getName() + " :" + message);
+        channel->broadcast(":" + user.getNickname() + " PRIVMSG " + channel->getName() + " :" + message + "\r\n");
     }
     else
     {
@@ -52,7 +52,7 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
         if (!targetClient)
             return;
 
-        targetClient->sendMessage(":" + user.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " PRIVMSG " + target + " :" + message);
+        targetClient->sendMessage(":" + user.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n");
     }
 }
 

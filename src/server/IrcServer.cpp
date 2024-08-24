@@ -15,7 +15,7 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->commands["NICK"] = Commands::nick_command;
 	this->commands["USER"] = Commands::user_command;
 	this->commands["PART"] = Commands::part_command;
-	this->commands["MSG"] = Commands::privmsg_command;
+	this->commands["PRIVMSG"] = Commands::privmsg_command;
 }
 
 IrcServer::~IrcServer()
