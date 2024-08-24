@@ -43,7 +43,7 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
         if (!channel)
             return;
 
-        channel->broadcast(":" + user.getNickname() + " PRIVMSG " + channel->getName() + " :" + message + "\r\n");
+        channel->broadcast(":" + user.getNickname() + " PRIVMSG " + channel->getName() + " :" + message + "\r\n", &user);
     }
     else
     {

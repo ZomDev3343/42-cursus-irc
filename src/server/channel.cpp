@@ -23,6 +23,15 @@ void Channel::broadcast(std::string message)
   }
 }
 
+void Channel::broadcast(std::string message, IrcClient *client)
+{
+  for (std::vector<IrcClient *>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
+  {
+    if ((*it) != client)
+      (*it)->sendMessage(message);
+  }
+}
+
 void Channel::addClient(IrcClient *client)
 {
   this->_clients.push_back(client);

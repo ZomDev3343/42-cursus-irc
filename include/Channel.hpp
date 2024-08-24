@@ -24,6 +24,7 @@ public:
   ~Channel();
 
   void broadcast(std::string message);
+  void broadcast(std::string message, IrcClient *client);
   void addClient(IrcClient *client);
   void removeClient(IrcClient *client);
   void addOperator(IrcClient *client);
