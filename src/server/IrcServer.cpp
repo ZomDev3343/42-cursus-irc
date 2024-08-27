@@ -193,6 +193,8 @@ std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
+	for (std::vector<Channel*>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+		delete *it;
 	for (std::map<int, IrcClient *>::iterator iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
 	{
 		close(iterator->first);
