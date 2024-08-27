@@ -218,3 +218,46 @@ void Commands::topic_command(IrcServer &server, IrcClient &user, std::string com
     else
         user.sendMessage("Unknown channel!\r\n");
 }
+
+void Commands::invite_command(IrcServer &server, IrcClient &user, std::string command)
+{
+    std::stringstream ss(command);
+    std::vector<std::string> args(2);
+    Channel *channel;
+
+    (void)server;
+    (void)user;
+    ss >> args[0];
+    for (int i = 0; i < 2 && !ss.eof(); i++)
+    {
+        ss >> args[i];
+        if (args[i] == "\n" || args[i] == "\r\n")
+            args[i].clear();
+        std::cout << args[i] << std::endl;
+    }
+
+    channel = server.getChannel(args[0]);
+    if (channel)
+    {
+        if (channel->isClientOperator(&user))
+        {
+            IrcClient *to_invite = server.getClient(args[1]);
+            if (to_invite)
+            {
+                if (!channel->hasClientJoined(to_invite))
+                {
+                    to_invite->sendMessage(":" + user.getNickname() + " INVITE " + to_invite->getNickname() + " " + channel->getName() + "\r\n");
+                    user.sendMessage(":" + user.getNickname() + " INVITE " + to_invite->getNickname() + " " + channel->getName() + "\r\n");
+                }
+                else
+                    user.sendMessage("This user has already joined the channel!\r\n");
+            }
+            else
+                user.sendMessage("Unknown user nickname!\r\n");
+        }
+        else
+            user.sendMessage("You don't have the rights to invite someone on this channel!\r\n");
+    }
+    else
+        user.sendMessage("Unknown channel!\r\n");
+}
