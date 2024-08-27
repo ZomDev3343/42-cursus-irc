@@ -169,10 +169,8 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
 				{
 					if (channel->hasClientJoined(to_kick))
 					{
-						std::stringstream id;
-						id << user.getId();
 						channel->removeClient(to_kick);
-						user.sendMessage(KICK_RPL(id.str(), channel->getName(), args[2]));
+						user.sendMessage(KICK_RPL(user.getNickname(), channel->getName(), args[2]));
 					}else
 						user.sendMessage("This user hasn't joined the channel!\r\n");
 				}
