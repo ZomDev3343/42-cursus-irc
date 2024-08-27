@@ -63,7 +63,7 @@ bool IrcServer::setupServer()
 	}
 
 	int sockopt = 1;
-	setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(sockopt));
+	setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &sockopt, sizeof(sockopt));
 	listen(this->sockfd, MAX_CLIENTS);
 
 	this->epollfd = epoll_create1(0);
@@ -137,7 +137,6 @@ void IrcServer::serverLoop()
 
 				if (bytes_received > 0)
 				{
-					std::cout << buffer << std::endl;
 					std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
 					this->processMessage(user_fd, buffer);
 				}
@@ -157,19 +156,14 @@ void IrcServer::processMessage(int user_fd, const char *message)
 	std::string msg(message);
 	std::string buffer;
 
-	// TODO a test
 	this->clients[user_fd]->appendToBuffer(msg);
 	buffer = this->clients[user_fd]->getBuffer();
 	if (buffer.find_first_of("\r\n") == std::string::npos)
 		return;
 
-	std::cout << "Pong" << std::endl;
-
 	std::vector<std::string> commands = splitCommands(buffer);
 	for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); ++it)
-	{
 		this->interpret_message(user_fd, *it);
-	}
 	if (this->clients[user_fd])
 		this->clients[user_fd]->clearBuffer();
 }
@@ -220,17 +214,15 @@ void IrcServer::interpret_message(int user_id, std::string const& command)
 	cmdname = command.substr(0, command.find_first_of(" \r\n"));
 
 	if (cmdname != "CAP" && cmdname != "PASS" && !user->isLogged())
-		this->close_client_connection(user_id, "Unauthorized connection, need password!");
+	{
+		std::cerr << "ERROR: Unauthorized connection, needs password!" << std::endl;
+		user->sendMessage("You need the enter the password first!\r\n");
+	}
 	else
 	{
-		std::cout << "Command Name : " << cmdname << std::endl;
 		cmdf = this->commands[cmdname];
 		if (cmdf != NULL)
-		{
-			std::cout << cmdname << " command started..." << std::endl;
 			cmdf(*this, *user, command);
-			std::cout << cmdname << " command finished..." << std::endl;
-		}
 	}
 }
 

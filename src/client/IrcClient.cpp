@@ -8,6 +8,7 @@ IrcClient::IrcClient(int id, std::string host)
     : _id(id), _hostname(host), _channel(NULL)
 {
     this->_logged = false;
+    this->_password_tries = 0;
 }
 
 IrcClient::~IrcClient()
@@ -78,19 +79,29 @@ std::string IrcClient::getUsername() const
 }
 
 void IrcClient::appendToBuffer(const std::string& msg) {
-        buffer += msg;
+        _buffer += msg;
 }
 
 std::string IrcClient::getBuffer() const {
-        return buffer;
+        return _buffer;
 }
 
 void IrcClient::clearBuffer()
 {
-	buffer.clear();
+	_buffer.clear();
 }
 
 void IrcClient::setLogged()
 {
     this->_logged = true;
+}
+
+int const& IrcClient::getTries() const
+{
+    return this->_password_tries;
+}
+
+void IrcClient::incrementTries()
+{
+    this->_password_tries++;
 }

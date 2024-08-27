@@ -9,27 +9,36 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
 	size_t		end_index;
 	if (user.isLogged())
 	{
-		std::cout << "User " << user.getId() << " is already logged in!" << std::endl;
-		user.sendMessage("You are already logged in!");
+		user.sendMessage("You are already logged in!\r\n");
 		return ;
 	}
 	if ((password_index = command.find(' ')) != std::string::npos)
 	{
 		if (command.find(' ', password_index + 1) != std::string::npos)
-			return (std::cout << "Error: Incorrect PASS command format" << std::endl, (void) 0);
-		end_index = command.find_first_of("\r\n", password_index + 1);
+			return (std::cerr << "ERROR: Incorrect PASS command format" << std::endl, (void) 0);
+
+        end_index = command.find_first_of("\r\n", password_index + 1);
 		password = command.substr(password_index + 1, end_index - (password_index + 1));
-		std::cout << "Password given with PASS command : " << password << std::endl;
+
 		if (password == server.getPassword())
 		{
 			std::cout << "User " << user.getId() << " logged in succesfully!" << std::endl;
 			user.setLogged();
+            user.sendMessage("You successfully logged in!\r\n");
 		}
 		else
-			server.close_client_connection(user.getId(), "Bad Password!");
+        {
+			user.sendMessage("Bad Password!\r\n");
+            user.incrementTries();
+            if (user.getTries() >= MAX_PASSWORD_TRIES)
+            {
+                user.sendMessage("You typed too many wrong passwords!\r\n");
+                server.close_client_connection(user.getId(), "Too much password tries!");
+            }
+        }
 	}
 	else
-		server.close_client_connection(user.getId(), "No password given!");
+		user.sendMessage("No password given!\r\n");
 }
 
 void Commands::part_command(IrcServer &server, IrcClient &user, std::string command)
