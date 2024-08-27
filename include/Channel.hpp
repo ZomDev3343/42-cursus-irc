@@ -30,6 +30,8 @@ public:
   void addOperator(IrcClient *client);
   void removeOperator(IrcClient *client);
   void printClient();
+  bool isClientOperator(IrcClient *client);
+  bool hasClientJoined(IrcClient *client);
 
   std::string getName();
 };
