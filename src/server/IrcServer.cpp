@@ -17,6 +17,7 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->commands["PART"] = Commands::part_command;
 	this->commands["PRIVMSG"] = Commands::privmsg_command;
 	this->commands["KICK"] = Commands::kick_command;
+	this->commands["TOPIC"] = Commands::topic_command;
 }
 
 IrcServer::~IrcServer()
@@ -188,7 +189,7 @@ std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
-	for (std::vector<Channel*>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+	for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
 		delete *it;
 	for (std::map<int, IrcClient *>::iterator iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
 	{
@@ -200,7 +201,7 @@ void IrcServer::stopServer()
 	std::cout << "Server stopped!" << std::endl;
 }
 
-void IrcServer::interpret_message(int user_id, std::string const& command)
+void IrcServer::interpret_message(int user_id, std::string const &command)
 {
 	IrcClient *user = this->clients[user_id];
 	std::string cmdname;
@@ -232,7 +233,7 @@ std::vector<Channel *> IrcServer::getChannels()
 	return (this->_channels);
 }
 
-void	IrcServer::addChannel(Channel* channel)
+void IrcServer::addChannel(Channel *channel)
 {
 	this->_channels.push_back(channel);
 }
@@ -257,7 +258,7 @@ IrcClient *IrcServer::getClient(std::string nickname)
 	return (NULL);
 }
 
-std::string const& IrcServer::getPassword() const
+std::string const &IrcServer::getPassword() const
 {
 	return this->password;
 }
@@ -266,7 +267,7 @@ void IrcServer::close_client_connection(int user_id, std::string reason)
 {
 	if (this->clients[user_id] != NULL)
 	{
-		for (std::vector<Channel*>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+		for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
 		{
 			(*it)->removeClient(this->clients[user_id]);
 			(*it)->removeOperator(this->clients[user_id]);

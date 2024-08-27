@@ -28,5 +28,7 @@ public:
 	static void privmsg_command(IrcServer &server,
 															IrcClient &user, std::string command);
 	static void kick_command(IrcServer &server,
-															IrcClient &user, std::string command);
+													 IrcClient &user, std::string command);
+	static void topic_command(IrcServer &server,
+														IrcClient &user, std::string command);
 };
