@@ -15,7 +15,10 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
 	if ((password_index = command.find(' ')) != std::string::npos)
 	{
 		if (command.find(' ', password_index + 1) != std::string::npos)
+        {
+            user.sendMessage("Wrong command format -> PASS <password>\r\n");
 			return (std::cerr << "ERROR: Incorrect PASS command format" << std::endl, (void) 0);
+        }
 
         end_index = command.find_first_of("\r\n", password_index + 1);
 		password = command.substr(password_index + 1, end_index - (password_index + 1));
