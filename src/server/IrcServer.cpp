@@ -271,6 +271,11 @@ void IrcServer::close_client_connection(int user_id, std::string reason)
 {
 	if (this->clients[user_id] != NULL)
 	{
+		for (std::vector<Channel*>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+		{
+			(*it)->removeClient(this->clients[user_id]);
+			(*it)->removeOperator(this->clients[user_id]);
+		}
 		delete this->clients[user_id];
 		this->clients.erase(user_id);
 		close(user_id);
