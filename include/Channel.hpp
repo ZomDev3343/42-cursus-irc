@@ -17,6 +17,7 @@ private:
   std::vector<IrcClient *> _operators;
 
   size_t _maxClients;
+  std::string _topic;
   Channel();
 
 public:
@@ -28,6 +29,7 @@ public:
   void addClient(IrcClient *client);
   void removeClient(IrcClient *client);
   void addOperator(IrcClient *client);
+  void setTopic(std::string topic);
   void removeOperator(IrcClient *client);
   void printClient();
   bool isClientOperator(IrcClient *client);
