@@ -14,7 +14,6 @@ private:
     std::string _hostname;
     std::string _nickname;
     std::string _username;
-    std::string _lastmsg;
     std::string buffer;
 
     bool _logged;
@@ -28,20 +27,16 @@ public:
     int const &getId() const;
     std::string const &getHostname() const;
     std::string const &getNickname() const;
-    std::string const &getLastMessage() const;
     std::string getUsername() const;
 
     void setUsername(std::string username);
     void setNickname(std::string newNickname);
-    void setLastMessage(std::string newLastMessage);
     void setHostname(std::string newHost);
     void setChannel(Channel *channel);
     Channel *getChannel();
     bool isLogged() const;
     void setLogged();
-    bool appendMessagePart(std::string &msg_part);
     void sendMessage(std::string message);
-    void clearLastMessage();
     void appendToBuffer(const std::string& msg);
     std::string getBuffer() const;
     void clearBuffer();

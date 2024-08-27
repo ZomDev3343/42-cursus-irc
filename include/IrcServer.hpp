@@ -39,7 +39,7 @@ public:
 	Channel *getChannel(std::string name);
 	std::string const& getPassword() const;
 
-	void	interpret_message(int user_id, const char buffer[256], const int &msglen);
+	void	interpret_message(int user_id, std::string const& command);
 	void	close_client_connection(int user_id, std::string reason = "");
 
 };

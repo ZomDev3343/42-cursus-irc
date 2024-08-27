@@ -137,7 +137,6 @@ void IrcServer::serverLoop()
 
 				if (bytes_received > 0)
 				{
-					buffer[bytes_received] = '\0';
 					std::cout << buffer << std::endl;
 					std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
 					this->processMessage(user_fd, buffer);
@@ -156,18 +155,23 @@ void IrcServer::serverLoop()
 void IrcServer::processMessage(int user_fd, const char *message)
 {
 	std::string msg(message);
+	std::string buffer;
 
-	if (msg.find_first_of("\r\n") == std::string::npos)
-	{
-		this->clients[user_fd]->appendToBuffer(msg);
+	// TODO a test
+	this->clients[user_fd]->appendToBuffer(msg);
+	buffer = this->clients[user_fd]->getBuffer();
+	if (buffer.find_first_of("\r\n") == std::string::npos)
 		return;
-	}
 
-	std::vector<std::string> commands = splitCommands(msg);
+	std::cout << "Pong" << std::endl;
+
+	std::vector<std::string> commands = splitCommands(buffer);
 	for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); ++it)
 	{
-		this->interpret_message(user_fd, it->c_str(), it->size());
+		this->interpret_message(user_fd, *it);
 	}
+	if (this->clients[user_fd])
+		this->clients[user_fd]->clearBuffer();
 }
 
 std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
@@ -199,9 +203,8 @@ void IrcServer::stopServer()
 	std::cout << "Server stopped!" << std::endl;
 }
 
-void IrcServer::interpret_message(int user_id, const char buffer[256], const int &msglen)
+void IrcServer::interpret_message(int user_id, std::string const& command)
 {
-	std::string msg_part(buffer, msglen);
 	IrcClient *user = this->clients[user_id];
 	std::string cmdname;
 
@@ -210,28 +213,23 @@ void IrcServer::interpret_message(int user_id, const char buffer[256], const int
 		std::cerr << "Error: Interpret Message function can't get the client with id [" << user_id << "]" << std::endl;
 		return;
 	}
-	if (user->appendMessagePart(msg_part))
-	{
-		std::string lastmsg = user->getLastMessage();
-		CommandFunction cmdf = NULL;
-		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \r\n"));
 
-		if (cmdname != "CAP" && cmdname != "PASS" && !user->isLogged())
-			this->close_client_connection(user_id, "Unauthorized connection, need password!");
-		else
+	CommandFunction cmdf = NULL;
+	cmdname = command.substr(0, command.find_first_of(" \r\n"));
+
+	if (cmdname != "CAP" && cmdname != "PASS" && !user->isLogged())
+		this->close_client_connection(user_id, "Unauthorized connection, need password!");
+	else
+	{
+		std::cout << "Command Name : " << cmdname << std::endl;
+		cmdf = this->commands[cmdname];
+		if (cmdf != NULL)
 		{
-			cmdf = this->commands[cmdname];
-			if (cmdf != NULL)
-			{
-				std::cout << cmdname << " command started..." << std::endl;
-				cmdf(*this, *user, lastmsg);
-				std::cout << cmdname << " command finished..." << std::endl;
-			}
-			user->clearLastMessage();
+			std::cout << cmdname << " command started..." << std::endl;
+			cmdf(*this, *user, command);
+			std::cout << cmdname << " command finished..." << std::endl;
 		}
 	}
-	else
-		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
 }
 
 std::vector<Channel *> IrcServer::getChannels()
