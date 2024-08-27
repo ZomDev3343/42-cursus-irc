@@ -19,6 +19,7 @@ int main(int ac, char **av)
 		port = std::atoi(av[1]);
 		password = av[2];
 		IrcServer server(port, password);
+		std::cout << "Server Password : " << server.getPassword() << std::endl;
 		if (server.setupServer())
 		{
 			signal(SIGINT, onStopSignal);

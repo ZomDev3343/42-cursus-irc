@@ -145,20 +145,19 @@ void IrcServer::serverLoop()
 				else
 				{
 					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
-					delete this->clients[user_fd];
-					this->clients.erase(user_fd);
-					close(user_fd);
+					this->close_client_connection(user_fd);
 				}
 			}
 		}
 	}
+	this->stopServer();
 }
 
 void IrcServer::processMessage(int user_fd, const char *message)
 {
 	std::string msg(message);
 
-	if (msg.find("\r\n") == std::string::npos)
+	if (msg.find_first_of("\r\n") == std::string::npos)
 	{
 		this->clients[user_fd]->appendToBuffer(msg);
 		return;
@@ -215,12 +214,21 @@ void IrcServer::interpret_message(int user_id, const char buffer[256], const int
 	{
 		std::string lastmsg = user->getLastMessage();
 		CommandFunction cmdf = NULL;
-		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n\0"));
+		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \r\n"));
 
-		cmdf = this->commands[cmdname];
-		if (cmdf != NULL)
-			cmdf(*this, *user, lastmsg);
-		user->clearLastMessage();
+		if (cmdname != "CAP" && cmdname != "PASS" && !user->isLogged())
+			this->close_client_connection(user_id, "Unauthorized connection, need password!");
+		else
+		{
+			cmdf = this->commands[cmdname];
+			if (cmdf != NULL)
+			{
+				std::cout << cmdname << " command started..." << std::endl;
+				cmdf(*this, *user, lastmsg);
+				std::cout << cmdname << " command finished..." << std::endl;
+			}
+			user->clearLastMessage();
+		}
 	}
 	else
 		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
@@ -254,4 +262,21 @@ IrcClient *IrcServer::getClient(std::string nickname)
 			return (it->second);
 	}
 	return (NULL);
+}
+
+std::string const& IrcServer::getPassword() const
+{
+	return this->password;
+}
+
+void IrcServer::close_client_connection(int user_id, std::string reason)
+{
+	if (this->clients[user_id] != NULL)
+	{
+		delete this->clients[user_id];
+		this->clients.erase(user_id);
+		close(user_id);
+		if (!reason.empty())
+			std::cout << "Kicked User " << user_id << " because " << reason << std::endl;
+	}
 }

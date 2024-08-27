@@ -37,6 +37,9 @@ public:
 	std::vector<Channel *> getChannels();
 	IrcClient *getClient(std::string nickname);
 	Channel *getChannel(std::string name);
+	std::string const& getPassword() const;
 
-	void interpret_message(int user_id, const char buffer[256], const int &msglen);
+	void	interpret_message(int user_id, const char buffer[256], const int &msglen);
+	void	close_client_connection(int user_id, std::string reason = "");
+
 };

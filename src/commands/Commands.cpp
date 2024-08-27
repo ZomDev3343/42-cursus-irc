@@ -4,11 +4,32 @@
 
 void Commands::pass_command(IrcServer &server, IrcClient &user, std::string command)
 {
-    (void)server;
-    (void)user;
-    (void)command;
-    std::cout << "Pass Command starting..." << std::endl;
-    std::cout << "Pass Command ended" << std::endl;
+	std::string	password;
+	size_t		password_index;
+	size_t		end_index;
+	if (user.isLogged())
+	{
+		std::cout << "User " << user.getId() << " is already logged in!" << std::endl;
+		user.sendMessage("You are already logged in!");
+		return ;
+	}
+	if ((password_index = command.find(' ')) != std::string::npos)
+	{
+		if (command.find(' ', password_index + 1) != std::string::npos)
+			return (std::cout << "Error: Incorrect PASS command format" << std::endl, (void) 0);
+		end_index = command.find_first_of("\r\n", password_index + 1);
+		password = command.substr(password_index + 1, end_index - (password_index + 1));
+		std::cout << "Password given with PASS command : " << password << std::endl;
+		if (password == server.getPassword())
+		{
+			std::cout << "User " << user.getId() << " logged in succesfully!" << std::endl;
+			user.setLogged();
+		}
+		else
+			server.close_client_connection(user.getId(), "Bad Password!");
+	}
+	else
+		server.close_client_connection(user.getId(), "No password given!");
 }
 
 void Commands::part_command(IrcServer &server, IrcClient &user, std::string command)

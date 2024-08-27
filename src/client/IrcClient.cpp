@@ -7,6 +7,7 @@
 IrcClient::IrcClient(int id, std::string host)
     : _id(id), _hostname(host), _channel(NULL)
 {
+    this->_logged = false;
 }
 
 IrcClient::~IrcClient()
@@ -89,9 +90,9 @@ Channel *IrcClient::getChannel()
     return this->_channel;
 }
 
-bool IrcClient::is_enregister()
+bool IrcClient::isLogged() const
 {
-    return this->_enregister;
+    return this->_logged;
 }
 
 void IrcClient::setUsername(std::string username)
@@ -115,4 +116,9 @@ std::string IrcClient::getBuffer() const {
 void IrcClient::clearBuffer()
 {
 	buffer.clear();
+}
+
+void IrcClient::setLogged()
+{
+    this->_logged = true;
 }

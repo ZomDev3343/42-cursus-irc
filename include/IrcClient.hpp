@@ -17,7 +17,7 @@ private:
     std::string _lastmsg;
     std::string buffer;
 
-    bool _enregister;
+    bool _logged;
 
     Channel *_channel;
 
@@ -37,7 +37,8 @@ public:
     void setHostname(std::string newHost);
     void setChannel(Channel *channel);
     Channel *getChannel();
-    bool is_enregister();
+    bool isLogged() const;
+    void setLogged();
     bool appendMessagePart(std::string &msg_part);
     void sendMessage(std::string message);
     void clearLastMessage();
