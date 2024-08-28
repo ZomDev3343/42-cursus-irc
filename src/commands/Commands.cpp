@@ -264,16 +264,15 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
             args[i].clear();
         std::cout << args[i] << std::endl;
     }
-
-    channel = server.getChannel(args[0]);
+    channel = server.getChannel(args[1]);
     if (channel)
     {
         if (channel->isClientOperator(&user))
         {
-            IrcClient *to_invite = server.getClient(args[1]);
+            IrcClient *to_invite = server.getClient(args[0]);
             if (to_invite)
             {
-                if (!channel->hasClientJoined(to_invite))
+                if (!channel->hasClientJoined(to_invite) && !channel->isInvited(to_invite))
                 {
                     channel->AddInvited(to_invite);
                     to_invite->sendMessage(":" + user.getNickname() + " INVITE " + to_invite->getNickname() + " " + channel->getName() + "\r\n");
