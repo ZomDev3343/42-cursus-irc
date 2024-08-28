@@ -117,7 +117,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
         user.sendMessage("This channel is invite only!\r\n");
         return;
     }
-    if (channel->getMaxClients() <= channel->getClients().size())
+    if (channel->getMaxClients() <= static_cast<int>(channel->getClients().size()))
     {
         user.sendMessage("This channel is full!\r\n");
         return;
