@@ -113,11 +113,13 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
         server.addChannel(channel);
         channel->addOperator(&user);
     }
-    if (channel->isInviteOnly() && !channel->isClientOperator(&user))
+    if (channel->isInviteOnly() && !channel->isClientOperator(&user) && !channel->isInvited(&user))
     {
         user.sendMessage("This channel is invite only!\r\n");
         return;
     }
+    else
+        channel->removeInvited(&user);
     if (channel->getMaxClients() <= channel->getClients().size())
     {
         user.sendMessage("This channel is full!\r\n");
@@ -237,7 +239,7 @@ void Commands::topic_command(IrcServer &server, IrcClient &user, std::string com
         if (channel->isClientOperator(&user) || !channel->isTopicOnlyOperator())
         {
             channel->setTopic(args[1]);
-            user.sendMessage(":" + user.getNickname() + " TOPIC " + channel->getName() + " :" + args[1] + "\r\n");
+            channel->broadcast(":" + user.getNickname() + " TOPIC " + channel->getName() + " :" + args[1] + "\r\n");
         }
         else
             user.sendMessage("You don't have the rights to change the topic on this channel!\r\n");
@@ -273,6 +275,7 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
             {
                 if (!channel->hasClientJoined(to_invite))
                 {
+                    channel->AddInvited(to_invite);
                     to_invite->sendMessage(":" + user.getNickname() + " INVITE " + to_invite->getNickname() + " " + channel->getName() + "\r\n");
                     user.sendMessage(":" + user.getNickname() + " INVITE " + to_invite->getNickname() + " " + channel->getName() + "\r\n");
                 }

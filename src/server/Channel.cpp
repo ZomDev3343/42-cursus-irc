@@ -129,3 +129,21 @@ std::string Channel::getPassword()
 {
   return this->_password;
 }
+
+void Channel::AddInvited(IrcClient *client)
+{
+  this->_invited.push_back(client);
+}
+
+void Channel::removeInvited(IrcClient *client)
+{
+  this->_invited.erase(std::remove(this->_invited.begin(), this->_invited.end(), client), this->_invited.end());
+}
+
+bool Channel::isInvited(IrcClient *client)
+{
+  for (std::vector<IrcClient *>::iterator it = this->_invited.begin(); it != this->_invited.end(); it++)
+    if ((*it) == client)
+      return true;
+  return false;
+}
