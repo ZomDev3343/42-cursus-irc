@@ -92,20 +92,38 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
 
 void Commands::join_command(IrcServer &server, IrcClient &user, std::string command)
 {
-    size_t spacePos = command.find(" ");
-    if (spacePos == std::string::npos)
-        return;
-    std::string channelName = command.substr(spacePos + 1);
-    if (channelName.empty() || channelName[0] != '#')
-        return;
-    channelName = channelName.substr(0, channelName.find_first_of(" \r\n"));
-    Channel *channel = server.getChannel(channelName);
+    std::stringstream ss(command);
+    std::vector<std::string> args(3);
+    Channel *channel;
+
+    for (int i = 0; i < 3 && !ss.eof(); i++)
+    {
+        ss >> args[i];
+        if (args[i] == "\n" || args[i] == "\r\n")
+            args[i].clear();
+        std::cout << args[i] << std::endl;
+    }
+
+    channel = server.getChannel(args[0]);
 
     if (!channel)
     {
-        channel = new Channel(channelName);
+        channel = new Channel(args[0]);
         server.addChannel(channel);
         channel->addOperator(&user);
+    }
+    if (channel->isInviteOnly() && !channel->isClientOperator(&user))
+    {
+        user.sendMessage("This channel is invite only!\r\n");
+        return;
+    }
+    if (channel->getMaxClients() <= channel->getClients().size())
+    {
+        user.sendMessage("This channel is full!\r\n");
+        return;
+    }
+    if (channel->getPassword() != "" && c)
+    {
     }
     channel->addClient(&user);
     std::cout << "[IRC_REQUEST] :"
@@ -312,6 +330,20 @@ void invite_mode_command(Channel *channel, IrcClient &user, std::vector<std::str
     }
 }
 
+void limit_mode_command(Channel *channel, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+l")
+    {
+        channel->setMaxClients(std::stoi(args[2]));
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +l " + args[2] + "\r\n");
+    }
+    else if (args[1] == "-l")
+    {
+        channel->setMaxClients(10);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -l\r\n");
+    }
+}
+
 void Commands::mode_command(IrcServer &server, IrcClient &user, std::string command)
 {
     std::stringstream ss(command);
@@ -336,10 +368,12 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
         {
             if (args[1] == "+o" || args[1] == "-o")
                 operator_command(channel, server, user, args);
-            if (args[1] == "+i" || args[1] == "-i")
+            else if (args[1] == "+i" || args[1] == "-i")
                 invite_mode_command(channel, user, args);
-            else
-                user.sendMessage("Unknown mode!\r\n");
+            else if (args[1] == "+l" || args[1] == "-l")
+                limit_mode_command(channel, user, args);
+            else if
+                else user.sendMessage("Unknown mode!\r\n");
         }
         else
             user.sendMessage("You don't have the rights to change the mode on this channel!\r\n");

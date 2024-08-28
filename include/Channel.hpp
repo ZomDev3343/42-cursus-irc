@@ -18,7 +18,8 @@ private:
 
   size_t _maxClients;
   std::string _topic;
-  bool inviteOnly;
+  bool _inviteOnly;
+  std::string _password;
   Channel();
 
 public:
@@ -31,6 +32,11 @@ public:
   void removeClient(IrcClient *client);
   void addOperator(IrcClient *client);
   void setInviteOnly(bool inviteOnly);
+  bool isInviteOnly();
+  void setMaxClients(size_t maxClients);
+  void setPassword(std::string password);
+  std::string getPassword();
+  size_t getMaxClients();
   void setTopic(std::string topic);
   void removeOperator(IrcClient *client);
   void printClient();

@@ -4,6 +4,9 @@ Channel::Channel(std::string name)
 {
   this->_name = name;
   this->_maxClients = 10;
+  this->_inviteOnly = false;
+  this->_topic = "";
+  this->_password = "";
 }
 
 Channel::~Channel()
@@ -84,5 +87,30 @@ void Channel::setTopic(std::string topic)
 
 void Channel::setInviteOnly(bool inviteOnly)
 {
-  this->inviteOnly = inviteOnly;
+  this->_inviteOnly = inviteOnly;
+}
+
+bool Channel::isInviteOnly()
+{
+  return this->_inviteOnly;
+}
+
+void Channel::setMaxClients(size_t maxClients)
+{
+  this->_maxClients = maxClients;
+}
+
+size_t Channel::getMaxClients()
+{
+  return this->_maxClients;
+}
+
+void Channel::setPassword(std::string password)
+{
+  this->_password = password;
+}
+
+std::string Channel::getPassword()
+{
+  return this->_password;
 }
