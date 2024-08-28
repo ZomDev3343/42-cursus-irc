@@ -84,7 +84,10 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
         IrcClient *targetClient = server.getClient(target);
 
         if (!targetClient)
+        {
+            user->sendMessage(ERR_NOSUCHNICK(user.getNickname(), target));
             return;
+        }
 
         targetClient->sendMessage(":" + user.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n");
     }
@@ -105,6 +108,11 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
         std::cout << args[i] << std::endl;
     }
 
+    if (args[0][0] != '#')
+    {
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), args[0]));
+        return;
+    }
     channel = server.getChannel(args[0]);
 
     if (!channel)
@@ -115,19 +123,19 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     }
     if (channel->isInviteOnly() && !channel->isClientOperator(&user) && !channel->isInvited(&user))
     {
-        user.sendMessage("This channel is invite only!\r\n");
+        user.sendMessage(ERR_INVITEONLYCHAN(user.getNickname(), channel->getName()));
         return;
     }
     else
         channel->removeInvited(&user);
     if (channel->getMaxClients() <= channel->getClients().size())
     {
-        user.sendMessage("This channel is full!\r\n");
+        user.sendMessage(ERR_CHANNELISFULL(user.getNickname(), channel->getName()));
         return;
     }
     if (channel->getPassword() != "" && channel->getPassword() != args[1])
     {
-        user.sendMessage("Wrong password!\r\n");
+        user.sendMessage(ERR_BADCHANNELKEY(user.getNickname(), channel->getName()));
         return;
     }
     channel->addClient(&user);
@@ -242,10 +250,10 @@ void Commands::topic_command(IrcServer &server, IrcClient &user, std::string com
             channel->broadcast(":" + user.getNickname() + " TOPIC " + channel->getName() + " :" + args[1] + "\r\n");
         }
         else
-            user.sendMessage("You don't have the rights to change the topic on this channel!\r\n");
+            user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage("Unknown channel!\r\n");
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
 }
 
 void Commands::invite_command(IrcServer &server, IrcClient &user, std::string command)
@@ -279,16 +287,16 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
                     user.sendMessage(":" + user.getNickname() + " INVITE " + to_invite->getNickname() + " " + channel->getName() + "\r\n");
                 }
                 else
-                    user.sendMessage("This user has already joined the channel!\r\n");
+                    user.sendMessage(ERR_USERONCHANNEL(user.getNickname(), to_invite->getNickname(), channel->getName()));
             }
             else
-                user.sendMessage("Unknown user nickname!\r\n");
+                user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[0]));
         }
         else
-            user.sendMessage("You don't have the rights to invite someone on this channel!\r\n");
+            user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage("Unknown channel!\r\n");
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
 }
 
 void operator_command(Channel *channel, IrcServer &server, IrcClient &user, std::vector<std::string> args)
@@ -307,7 +315,7 @@ void operator_command(Channel *channel, IrcServer &server, IrcClient &user, std:
                 user.sendMessage("This user is already an operator!\r\n");
         }
         else
-            user.sendMessage("Unknown user nickname!\r\n");
+            user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[2]));
     }
     else if (args[1] == "-o")
     {
@@ -323,7 +331,7 @@ void operator_command(Channel *channel, IrcServer &server, IrcClient &user, std:
                 user.sendMessage("This user is not an operator!\r\n");
         }
         else
-            user.sendMessage("Unknown user nickname!\r\n");
+            user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[2]));
     }
 }
 
@@ -417,8 +425,8 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
                 user.sendMessage("Unknown mode!\r\n");
         }
         else
-            user.sendMessage("You don't have the rights to change the mode on this channel!\r\n");
+            user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage("Unknown channel!\r\n");
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
 }
