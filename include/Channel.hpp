@@ -35,6 +35,7 @@ public:
   bool isInviteOnly();
   void setMaxClients(int maxClients);
   void setPassword(std::string password);
+  std::vector<IrcClient *> getClients();
   std::string getPassword();
   int getMaxClients();
   void setTopic(std::string topic);

@@ -339,7 +339,7 @@ void limit_mode_command(Channel *channel, IrcClient &user, std::vector<std::stri
 {
     if (args[1] == "+l")
     {
-        channel->setMaxClients(std::atoi(args[2]));
+        channel->setMaxClients(std::atoi(args[2].c_str()));
         user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +l " + args[2] + "\r\n");
     }
     else if (args[1] == "-l")
