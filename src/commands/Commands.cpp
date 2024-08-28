@@ -262,6 +262,56 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
         user.sendMessage("Unknown channel!\r\n");
 }
 
+void operator_command(Channel *channel, IrcServer &server, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+o")
+    {
+        IrcClient *to_op = server.getClient(args[2]);
+        if (to_op)
+        {
+            if (!channel->isClientOperator(to_op))
+            {
+                channel->addOperator(to_op);
+                user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +o " + to_op->getNickname() + "\r\n");
+            }
+            else
+                user.sendMessage("This user is already an operator!\r\n");
+        }
+        else
+            user.sendMessage("Unknown user nickname!\r\n");
+    }
+    else if (args[1] == "-o")
+    {
+        IrcClient *to_deop = server.getClient(args[2]);
+        if (to_deop)
+        {
+            if (channel->isClientOperator(to_deop))
+            {
+                channel->removeOperator(to_deop);
+                user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -o " + to_deop->getNickname() + "\r\n");
+            }
+            else
+                user.sendMessage("This user is not an operator!\r\n");
+        }
+        else
+            user.sendMessage("Unknown user nickname!\r\n");
+    }
+}
+
+void invite_mode_command(Channel *channel, IrcServer &server, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+i")
+    {
+        channel->setInviteOnly(true);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +i\r\n");
+    }
+    else if (args[1] == "-i")
+    {
+        channel->setInviteOnly(false);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -i\r\n");
+    }
+}
+
 void Commands::mode_command(IrcServer &server, IrcClient &user, std::string command)
 {
     std::stringstream ss(command);
@@ -284,38 +334,10 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
     {
         if (channel->isClientOperator(&user))
         {
-            if (args[1] == "+o")
-            {
-                IrcClient *to_op = server.getClient(args[2]);
-                if (to_op)
-                {
-                    if (!channel->isClientOperator(to_op))
-                    {
-                        channel->addOperator(to_op);
-                        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +o " + to_op->getNickname() + "\r\n");
-                    }
-                    else
-                        user.sendMessage("This user is already an operator!\r\n");
-                }
-                else
-                    user.sendMessage("Unknown user nickname!\r\n");
-            }
-            else if (args[1] == "-o")
-            {
-                IrcClient *to_deop = server.getClient(args[2]);
-                if (to_deop)
-                {
-                    if (channel->isClientOperator(to_deop))
-                    {
-                        channel->removeOperator(to_deop);
-                        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -o " + to_deop->getNickname() + "\r\n");
-                    }
-                    else
-                        user.sendMessage("This user is not an operator!\r\n");
-                }
-                else
-                    user.sendMessage("Unknown user nickname!\r\n");
-            }
+            if (args[1] == "+o" || args[1] == "-o")
+                operator_command(channel, server, user, args);
+            if (args[1] == "+i" || args[1] == "-i")
+                invite_mode_command(channel, server, user, args);
             else
                 user.sendMessage("Unknown mode!\r\n");
         }
