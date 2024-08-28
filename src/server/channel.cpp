@@ -114,3 +114,8 @@ std::string Channel::getPassword()
 {
   return this->_password;
 }
+
+std::vector<IrcClient *> Channel::getClients()
+{
+  return this->_clients;
+}
