@@ -105,6 +105,11 @@ void Channel::setTopicOnlyOperator(bool topicOnlyOperator)
   this->_topicOnlyOperator = topicOnlyOperator;
 }
 
+bool Channel::isTopicOnlyOperator()
+{
+  return this->_topicOnlyOperator;
+}
+
 void Channel::setMaxClients(int maxClients)
 {
   this->_maxClients = maxClients;

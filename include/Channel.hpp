@@ -34,6 +34,7 @@ public:
   void addOperator(IrcClient *client);
   void setInviteOnly(bool inviteOnly);
   void setTopicOnlyOperator(bool topicOnlyOperator);
+  bool isTopicOnlyOperator();
   bool isInviteOnly();
   void setMaxClients(int maxClients);
   void setPassword(std::string password);
