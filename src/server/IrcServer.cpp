@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include "../../include/IrcClient.hpp"
 #include "../../include/Commands.hpp"
+#include "../../include/RPL.hpp"
 #include "../../include/IrcServer.hpp"
 
 IrcServer::IrcServer(int &port, std::string &password)
@@ -220,7 +221,7 @@ void IrcServer::interpret_message(int user_id, std::string const &command)
 	if (cmdname != "CAP" && cmdname != "PASS" && !user->isLogged())
 	{
 		std::cerr << "ERROR: Unauthorized connection, needs password!" << std::endl;
-		user->sendMessage("You need the enter the password first!\r\n");
+		user->sendMessage(ERR_NOTREGISTERED(user->getNickname()));
 	}
 	else
 	{

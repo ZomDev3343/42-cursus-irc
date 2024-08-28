@@ -10,14 +10,14 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
     size_t end_index;
     if (user.isLogged())
     {
-        user.sendMessage("You are already logged in!\r\n");
+        user.sendMessage(ERR_ALREADY_REGISTERED(user.getNickname()));
         return;
     }
     if ((password_index = command.find(' ')) != std::string::npos)
     {
         if (command.find(' ', password_index + 1) != std::string::npos)
         {
-            user.sendMessage("Wrong command format -> PASS <password>\r\n");
+            user.sendMessage(ERR_PASSWORD(user.getNickname()));
             return (std::cerr << "ERROR: Incorrect PASS command format" << std::endl, (void)0);
         }
 
@@ -32,7 +32,7 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
         }
         else
         {
-            user.sendMessage("Bad Password!\r\n");
+            user.sendMessage(ERR_PASSWORD(user.getNickname()));
             user.incrementTries();
             if (user.getTries() >= MAX_PASSWORD_TRIES)
             {
@@ -162,9 +162,6 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
     std::stringstream ss(command);
     std::vector<std::string> args(3);
     Channel *channel;
-
-    (void)server;
-    (void)user;
     ss >> args[0];
     for (int i = 0; i < 3 && !ss.eof(); i++)
     {
@@ -177,32 +174,38 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
     channel = server.getChannel(args[0]);
     if (channel)
     {
-        if (channel->isClientOperator(&user))
-        {
-            IrcClient *to_kick = server.getClient(args[1]);
-            if (to_kick)
-            {
-                if (!channel->isClientOperator(to_kick))
-                {
-                    if (channel->hasClientJoined(to_kick))
-                    {
-                        channel->removeClient(to_kick);
-                        user.sendMessage(KICK_RPL(user.getNickname(), channel->getName(), args[2]));
-                    }
-                    else
-                        user.sendMessage("This user hasn't joined the channel!\r\n");
-                }
-                else
-                    user.sendMessage("You can't kick an operator!\r\n");
-            }
-            else
-                user.sendMessage("Unknown user nickname!\r\n");
-        }
-        else
-            user.sendMessage("You don't have the rights to kick someone on this channel!\r\n");
-    }
+		if (channel->hasClientJoined(&user))
+		{
+			if (channel->isClientOperator(&user))
+			{
+				IrcClient *to_kick = server.getClient(args[1]);
+				if (to_kick)
+				{
+					if (!channel->isClientOperator(to_kick))
+					{
+						if (channel->hasClientJoined(to_kick))
+						{
+							channel->removeClient(to_kick);
+							user.sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
+							to_kick->sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
+						}
+						else
+							user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
+					}
+					else
+						user.sendMessage(ERR_KICKOPERATOR(user.getNickname()));
+				}
+				else
+					user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[0]));
+			}
+			else
+				user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
+		}
+		else
+			user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
+	}
     else
-        user.sendMessage("Unknown channel!\r\n");
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
 }
 
 void Commands::topic_command(IrcServer &server, IrcClient &user, std::string command)
