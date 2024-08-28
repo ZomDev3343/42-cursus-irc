@@ -5,6 +5,7 @@ Channel::Channel(std::string name)
   this->_name = name;
   this->_maxClients = 10;
   this->_inviteOnly = false;
+  this->_topicOnlyOperator = true;
   this->_topic = "";
   this->_password = "";
 }
@@ -90,13 +91,18 @@ void Channel::setInviteOnly(bool inviteOnly)
   this->_inviteOnly = inviteOnly;
 }
 
-std::vector<IrcClient*>& Channel::getClients()
+std::vector<IrcClient *> &Channel::getClients()
 {
-	return this->_clients;
+  return this->_clients;
 }
 bool Channel::isInviteOnly()
 {
   return this->_inviteOnly;
+}
+
+void Channel::setTopicOnlyOperator(bool topicOnlyOperator)
+{
+  this->_topicOnlyOperator = topicOnlyOperator;
 }
 
 void Channel::setMaxClients(int maxClients)
