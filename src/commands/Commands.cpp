@@ -298,7 +298,7 @@ void operator_command(Channel *channel, IrcServer &server, IrcClient &user, std:
     }
 }
 
-void invite_mode_command(Channel *channel IrcClient &user, std::vector<std::string> args)
+void invite_mode_command(Channel *channel, IrcClient &user, std::vector<std::string> args)
 {
     if (args[1] == "+i")
     {
