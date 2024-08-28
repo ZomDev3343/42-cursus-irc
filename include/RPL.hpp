@@ -16,3 +16,5 @@
 /* Commands Messages */
 
 # define KICK_RPL(kicker, kicking, channel, reason) ":" + kicker + " KICK " + channel + " " + kicking + " :" + reason + "\r\n"
+# define WHO_RPL(channel, username, hostname, server, nickname) "352 " + channel + " " + username + " " + hostname + " " + server + " " + nickname + " H :0 " + nickname + "\r\n"
+# define ENDOFWHO_RPL(nickname) "315 " + nickname + " :End of /WHO list\r\n"

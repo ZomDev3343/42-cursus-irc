@@ -86,3 +86,8 @@ void Channel::setInviteOnly(bool inviteOnly)
 {
   this->inviteOnly = inviteOnly;
 }
+
+std::vector<IrcClient*>& Channel::getClients()
+{
+	return this->_clients;
+}

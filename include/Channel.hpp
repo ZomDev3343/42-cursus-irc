@@ -36,6 +36,7 @@ public:
   void printClient();
   bool isClientOperator(IrcClient *client);
   bool hasClientJoined(IrcClient *client);
+  std::vector<IrcClient*>& getClients();
 
   std::string getName();
 };
