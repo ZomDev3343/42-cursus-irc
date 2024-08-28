@@ -122,8 +122,10 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
         user.sendMessage("This channel is full!\r\n");
         return;
     }
-    if (channel->getPassword() != "" && c)
+    if (channel->getPassword() != "" && channel->getPassword() != args[1])
     {
+        user.sendMessage("Wrong password!\r\n");
+        return;
     }
     channel->addClient(&user);
     std::cout << "[IRC_REQUEST] :"
@@ -174,36 +176,36 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
     channel = server.getChannel(args[0]);
     if (channel)
     {
-		if (channel->hasClientJoined(&user))
-		{
-			if (channel->isClientOperator(&user))
-			{
-				IrcClient *to_kick = server.getClient(args[1]);
-				if (to_kick)
-				{
-					if (!channel->isClientOperator(to_kick))
-					{
-						if (channel->hasClientJoined(to_kick))
-						{
-							channel->removeClient(to_kick);
-							user.sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
-							to_kick->sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
-						}
-						else
-							user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
-					}
-					else
-						user.sendMessage(ERR_KICKOPERATOR(user.getNickname()));
-				}
-				else
-					user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[0]));
-			}
-			else
-				user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
-		}
-		else
-			user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
-	}
+        if (channel->hasClientJoined(&user))
+        {
+            if (channel->isClientOperator(&user))
+            {
+                IrcClient *to_kick = server.getClient(args[1]);
+                if (to_kick)
+                {
+                    if (!channel->isClientOperator(to_kick))
+                    {
+                        if (channel->hasClientJoined(to_kick))
+                        {
+                            channel->removeClient(to_kick);
+                            user.sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
+                            to_kick->sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
+                        }
+                        else
+                            user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
+                    }
+                    else
+                        user.sendMessage(ERR_KICKOPERATOR(user.getNickname()));
+                }
+                else
+                    user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[0]));
+            }
+            else
+                user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
+        }
+        else
+            user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
+    }
     else
         user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
 }
@@ -337,13 +339,27 @@ void limit_mode_command(Channel *channel, IrcClient &user, std::vector<std::stri
 {
     if (args[1] == "+l")
     {
-        channel->setMaxClients(std::stoi(args[2]));
+        channel->setMaxClients(std::atoi(args[2]));
         user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +l " + args[2] + "\r\n");
     }
     else if (args[1] == "-l")
     {
         channel->setMaxClients(10);
         user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -l\r\n");
+    }
+}
+
+void pass_mode_command(Channel *channel, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+k")
+    {
+        channel->setPassword(args[2]);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +k " + args[2] + "\r\n");
+    }
+    else if (args[1] == "-k")
+    {
+        channel->setPassword("");
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -k\r\n");
     }
 }
 
@@ -375,8 +391,10 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
                 invite_mode_command(channel, user, args);
             else if (args[1] == "+l" || args[1] == "-l")
                 limit_mode_command(channel, user, args);
-            else if
-                else user.sendMessage("Unknown mode!\r\n");
+            else if (args[1] == "+k" || args[1] == "-k")
+                pass_mode_command(channel, user, args);
+            else
+                user.sendMessage("Unknown mode!\r\n");
         }
         else
             user.sendMessage("You don't have the rights to change the mode on this channel!\r\n");

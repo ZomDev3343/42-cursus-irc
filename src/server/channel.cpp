@@ -95,12 +95,12 @@ bool Channel::isInviteOnly()
   return this->_inviteOnly;
 }
 
-void Channel::setMaxClients(size_t maxClients)
+void Channel::setMaxClients(int maxClients)
 {
   this->_maxClients = maxClients;
 }
 
-size_t Channel::getMaxClients()
+int Channel::getMaxClients()
 {
   return this->_maxClients;
 }

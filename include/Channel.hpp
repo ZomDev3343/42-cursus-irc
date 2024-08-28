@@ -16,7 +16,7 @@ private:
   std::vector<IrcClient *> _clients;
   std::vector<IrcClient *> _operators;
 
-  size_t _maxClients;
+  int _maxClients;
   std::string _topic;
   bool _inviteOnly;
   std::string _password;
@@ -33,10 +33,10 @@ public:
   void addOperator(IrcClient *client);
   void setInviteOnly(bool inviteOnly);
   bool isInviteOnly();
-  void setMaxClients(size_t maxClients);
+  void setMaxClients(int maxClients);
   void setPassword(std::string password);
   std::string getPassword();
-  size_t getMaxClients();
+  int getMaxClients();
   void setTopic(std::string topic);
   void removeOperator(IrcClient *client);
   void printClient();
