@@ -19,6 +19,7 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->commands["KICK"] = Commands::kick_command;
 	this->commands["TOPIC"] = Commands::topic_command;
 	this->commands["INVITE"] = Commands::invite_command;
+	this->commands["MODE"] = Commands::mode_command;
 }
 
 IrcServer::~IrcServer()

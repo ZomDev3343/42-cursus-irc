@@ -261,3 +261,67 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
     else
         user.sendMessage("Unknown channel!\r\n");
 }
+
+void Commands::mode_command(IrcServer &server, IrcClient &user, std::string command)
+{
+    std::stringstream ss(command);
+    std::vector<std::string> args(3);
+    Channel *channel;
+
+    (void)server;
+    (void)user;
+    ss >> args[0];
+    for (int i = 0; i < 3 && !ss.eof(); i++)
+    {
+        ss >> args[i];
+        if (args[i] == "\n" || args[i] == "\r\n")
+            args[i].clear();
+        std::cout << args[i] << std::endl;
+    }
+
+    channel = server.getChannel(args[0]);
+    if (channel)
+    {
+        if (channel->isClientOperator(&user))
+        {
+            if (args[1] == "+o")
+            {
+                IrcClient *to_op = server.getClient(args[2]);
+                if (to_op)
+                {
+                    if (!channel->isClientOperator(to_op))
+                    {
+                        channel->addOperator(to_op);
+                        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +o " + to_op->getNickname() + "\r\n");
+                    }
+                    else
+                        user.sendMessage("This user is already an operator!\r\n");
+                }
+                else
+                    user.sendMessage("Unknown user nickname!\r\n");
+            }
+            else if (args[1] == "-o")
+            {
+                IrcClient *to_deop = server.getClient(args[2]);
+                if (to_deop)
+                {
+                    if (channel->isClientOperator(to_deop))
+                    {
+                        channel->removeOperator(to_deop);
+                        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -o " + to_deop->getNickname() + "\r\n");
+                    }
+                    else
+                        user.sendMessage("This user is not an operator!\r\n");
+                }
+                else
+                    user.sendMessage("Unknown user nickname!\r\n");
+            }
+            else
+                user.sendMessage("Unknown mode!\r\n");
+        }
+        else
+            user.sendMessage("You don't have the rights to change the mode on this channel!\r\n");
+    }
+    else
+        user.sendMessage("Unknown channel!\r\n");
+}
