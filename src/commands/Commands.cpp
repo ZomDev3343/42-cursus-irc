@@ -85,7 +85,7 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
 
         if (!targetClient)
         {
-            user->sendMessage(ERR_NOSUCHNICK(user.getNickname(), target));
+            user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), target));
             return;
         }
 
