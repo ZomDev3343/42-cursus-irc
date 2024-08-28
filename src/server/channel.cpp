@@ -81,3 +81,8 @@ void Channel::setTopic(std::string topic)
 {
   this->_topic = topic;
 }
+
+void Channel::setInviteOnly(bool inviteOnly)
+{
+  this->inviteOnly = inviteOnly;
+}
