@@ -337,7 +337,7 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
             if (args[1] == "+o" || args[1] == "-o")
                 operator_command(channel, server, user, args);
             if (args[1] == "+i" || args[1] == "-i")
-                invite_mode_command(channel user, args);
+                invite_mode_command(channel, user, args);
             else
                 user.sendMessage("Unknown mode!\r\n");
         }
