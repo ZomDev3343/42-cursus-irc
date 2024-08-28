@@ -92,20 +92,40 @@ void Commands::privmsg_command(IrcServer &server, IrcClient &user, std::string c
 
 void Commands::join_command(IrcServer &server, IrcClient &user, std::string command)
 {
-    size_t spacePos = command.find(" ");
-    if (spacePos == std::string::npos)
-        return;
-    std::string channelName = command.substr(spacePos + 1);
-    if (channelName.empty() || channelName[0] != '#')
-        return;
-    channelName = channelName.substr(0, channelName.find_first_of(" \r\n"));
-    Channel *channel = server.getChannel(channelName);
+    std::stringstream ss(command);
+    std::vector<std::string> args(3);
+    Channel *channel;
+
+    for (int i = 0; i < 3 && !ss.eof(); i++)
+    {
+        ss >> args[i];
+        if (args[i] == "\n" || args[i] == "\r\n")
+            args[i].clear();
+        std::cout << args[i] << std::endl;
+    }
+
+    channel = server.getChannel(args[0]);
 
     if (!channel)
     {
-        channel = new Channel(channelName);
+        channel = new Channel(args[0]);
         server.addChannel(channel);
         channel->addOperator(&user);
+    }
+    if (channel->isInviteOnly() && !channel->isClientOperator(&user))
+    {
+        user.sendMessage("This channel is invite only!\r\n");
+        return;
+    }
+    if (channel->getMaxClients() <= channel->getClients().size())
+    {
+        user.sendMessage("This channel is full!\r\n");
+        return;
+    }
+    if (channel->getPassword() != "" && channel->getPassword() != args[1])
+    {
+        user.sendMessage("Wrong password!\r\n");
+        return;
     }
     channel->addClient(&user);
     std::cout << "[IRC_REQUEST] :"
@@ -159,36 +179,36 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
     channel = server.getChannel(args[0]);
     if (channel)
     {
-		if (channel->hasClientJoined(&user))
-		{
-			if (channel->isClientOperator(&user))
-			{
-				IrcClient *to_kick = server.getClient(args[1]);
-				if (to_kick)
-				{
-					if (!channel->isClientOperator(to_kick))
-					{
-						if (channel->hasClientJoined(to_kick))
-						{
-							channel->removeClient(to_kick);
-							user.sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
-							to_kick->sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
-						}
-						else
-							user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
-					}
-					else
-						user.sendMessage(ERR_KICKOPERATOR(user.getNickname()));
-				}
-				else
-					user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[0]));
-			}
-			else
-				user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
-		}
-		else
-			user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
-	}
+        if (channel->hasClientJoined(&user))
+        {
+            if (channel->isClientOperator(&user))
+            {
+                IrcClient *to_kick = server.getClient(args[1]);
+                if (to_kick)
+                {
+                    if (!channel->isClientOperator(to_kick))
+                    {
+                        if (channel->hasClientJoined(to_kick))
+                        {
+                            channel->removeClient(to_kick);
+                            user.sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
+                            to_kick->sendMessage(KICK_RPL(user.getNickname(), to_kick->getNickname(), channel->getName(), args[2]));
+                        }
+                        else
+                            user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
+                    }
+                    else
+                        user.sendMessage(ERR_KICKOPERATOR(user.getNickname()));
+                }
+                else
+                    user.sendMessage(ERR_NOSUCHNICK(user.getNickname(), args[0]));
+            }
+            else
+                user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
+        }
+        else
+            user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
+    }
     else
         user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
 }
@@ -318,6 +338,34 @@ void invite_mode_command(Channel *channel, IrcClient &user, std::vector<std::str
     }
 }
 
+void limit_mode_command(Channel *channel, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+l")
+    {
+        channel->setMaxClients(std::atoi(args[2].c_str()));
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +l " + args[2] + "\r\n");
+    }
+    else if (args[1] == "-l")
+    {
+        channel->setMaxClients(10);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -l\r\n");
+    }
+}
+
+void pass_mode_command(Channel *channel, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+k")
+    {
+        channel->setPassword(args[2]);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +k " + args[2] + "\r\n");
+    }
+    else if (args[1] == "-k")
+    {
+        channel->setPassword("");
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -k\r\n");
+    }
+}
+
 void Commands::mode_command(IrcServer &server, IrcClient &user, std::string command)
 {
     std::stringstream ss(command);
@@ -340,8 +388,12 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
         {
             if (args[1] == "+o" || args[1] == "-o")
                 operator_command(channel, server, user, args);
-            if (args[1] == "+i" || args[1] == "-i")
+            else if (args[1] == "+i" || args[1] == "-i")
                 invite_mode_command(channel, user, args);
+            else if (args[1] == "+l" || args[1] == "-l")
+                limit_mode_command(channel, user, args);
+            else if (args[1] == "+k" || args[1] == "-k")
+                pass_mode_command(channel, user, args);
             else
                 user.sendMessage("Unknown mode!\r\n");
         }
