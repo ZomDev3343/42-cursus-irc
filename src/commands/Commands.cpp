@@ -96,6 +96,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     std::vector<std::string> args(3);
     Channel *channel;
 
+    ss >> args[0];
     for (int i = 0; i < 3 && !ss.eof(); i++)
     {
         ss >> args[i];
@@ -133,9 +134,9 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
               << " JOIN "
               << channel->getName() << std::endl;
     channel->broadcast(":" + user.getNickname() + " JOIN " + channel->getName() + "\r\n");
-	for (std::vector<IrcClient*>::iterator it = channel->getClients().begin(); it != channel->getClients().end(); it++)
-		if (*it != &user)
-			user.sendMessage(":" + (*it)->getNickname() + " JOIN " + channel->getName() + "\r\n");
+    for (std::vector<IrcClient *>::iterator it = channel->getClients().begin(); it != channel->getClients().end(); it++)
+        if (*it != &user)
+            user.sendMessage(":" + (*it)->getNickname() + " JOIN " + channel->getName() + "\r\n");
 }
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)
