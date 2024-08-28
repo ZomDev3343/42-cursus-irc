@@ -96,6 +96,7 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     std::vector<std::string> args(3);
     Channel *channel;
 
+    ss >> args[0];
     for (int i = 0; i < 3 && !ss.eof(); i++)
     {
         ss >> args[i];
@@ -133,9 +134,9 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
               << " JOIN "
               << channel->getName() << std::endl;
     channel->broadcast(":" + user.getNickname() + " JOIN " + channel->getName() + "\r\n");
-	for (std::vector<IrcClient*>::iterator it = channel->getClients().begin(); it != channel->getClients().end(); it++)
-		if (*it != &user)
-			user.sendMessage(":" + (*it)->getNickname() + " JOIN " + channel->getName() + "\r\n");
+    for (std::vector<IrcClient *>::iterator it = channel->getClients().begin(); it != channel->getClients().end(); it++)
+        if (*it != &user)
+            user.sendMessage(":" + (*it)->getNickname() + " JOIN " + channel->getName() + "\r\n");
 }
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)
@@ -233,7 +234,7 @@ void Commands::topic_command(IrcServer &server, IrcClient &user, std::string com
     channel = server.getChannel(args[0]);
     if (channel)
     {
-        if (channel->isClientOperator(&user))
+        if (channel->isClientOperator(&user) || !channel->isTopicOnlyOperator())
         {
             channel->setTopic(args[1]);
             user.sendMessage(":" + user.getNickname() + " TOPIC " + channel->getName() + " :" + args[1] + "\r\n");
@@ -366,6 +367,20 @@ void pass_mode_command(Channel *channel, IrcClient &user, std::vector<std::strin
     }
 }
 
+void topic_mode_command(Channel *channel, IrcClient &user, std::vector<std::string> args)
+{
+    if (args[1] == "+t")
+    {
+        channel->setTopicOnlyOperator(true);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " +t\r\n");
+    }
+    else if (args[1] == "-t")
+    {
+        channel->setTopicOnlyOperator(false);
+        user.sendMessage(":" + user.getNickname() + " MODE " + channel->getName() + " -t\r\n");
+    }
+}
+
 void Commands::mode_command(IrcServer &server, IrcClient &user, std::string command)
 {
     std::stringstream ss(command);
@@ -394,6 +409,8 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
                 limit_mode_command(channel, user, args);
             else if (args[1] == "+k" || args[1] == "-k")
                 pass_mode_command(channel, user, args);
+            else if (args[1] == "+t" || args[1] == "-t")
+                topic_mode_command(channel, user, args);
             else
                 user.sendMessage("Unknown mode!\r\n");
         }
