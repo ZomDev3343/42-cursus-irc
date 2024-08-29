@@ -18,6 +18,9 @@
 #define ERR_CHANNELISFULL(source, channel) "471 " + source + " " + channel + " :Cannot join channel (+l)\r\n"
 #define ERR_NOLOGIN(source) "444 " + source + " :User not logged in\r\n"
 #define ERR_USERONCHANNEL(source, nickname, channel) "443 " + source + " " + nickname + " " + channel + " :is already on channel\r\n"
+#define ERR_NONICKNAMEGIVEN "431 :No nickname given\r\n"
+#define ERR_NICKNAMEINUSE(nickname) "433 " + nickname + " :Nickname is already in use\r\n"
+
 
 /* Commands Messages */
 

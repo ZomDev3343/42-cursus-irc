@@ -99,6 +99,12 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     std::vector<std::string> args(3);
     Channel *channel;
 
+	if (user.getNickname().empty() || user.getUsername().empty())
+	{
+		user.sendMessage(ERR_NOTREGISTERED(user.getNickname()));
+		return ;
+	}
+
     ss >> args[0];
     for (int i = 0; i < 3 && !ss.eof(); i++)
     {
@@ -153,15 +159,34 @@ void Commands::nick_command(IrcServer &server, IrcClient &user, std::string comm
 {
     (void)server;
 
+	if (!user.getNickname().empty())
+	{
+		user.sendMessage(ERR_ALREADY_REGISTERED(user.getNickname()));
+		return ;
+	}
     std::string nick = command.substr(command.find(" ") + 1);
-    nick = nick.substr(0, nick.size() - 3);
-    nick[nick.size()] = '\0';
-    user.setNickname(nick);
+    nick = nick.substr(0, nick.size() - 2);
+	if (!server.getClient(nick))
+		user.setNickname(nick);
+	else
+		user.sendMessage(ERR_NICKNAMEINUSE(nick));
 }
 
 void Commands::user_command(IrcServer &server, IrcClient &user, std::string command)
 {
     (void)server;
+
+	if (user.getNickname().empty())
+	{
+		user.sendMessage(ERR_NONICKNAMEGIVEN);
+		return ;
+	}
+
+	if (!user.getUsername().empty())
+	{
+		user.sendMessage(ERR_ALREADY_REGISTERED(user.getNickname()));
+		return ;
+	}
 
     std::string name = command.substr(0, command.find(' '));
     std::vector<std::string> argv;
