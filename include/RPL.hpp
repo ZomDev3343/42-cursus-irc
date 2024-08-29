@@ -3,7 +3,7 @@
 /* Error Messages */
 
 #define ERR_PASSWORD(source) "464 " + source + ":Password incorrect\r\n"
-#define ERR_NOTREGISTERED(source) "451 " + source + " :You have not registred\r\n"
+#define ERR_NOTREGISTERED(source) "451 " + source + " :You have not registered\r\n"
 #define ERR_ALREADY_REGISTERED(source) "462 " + source + " :You may not reregister\r\n"
 #define ERR_NOTONCHANNEL(source, channel) "442 " + source + " " + channel + " :You're not on that channel\r\n"
 #define ERR_USERNOTINCHANNEL(source, nickname, channel) "441 " + source + " " + nickname + " " + channel + " :They aren't on that channel\r\n"

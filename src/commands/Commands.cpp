@@ -8,11 +8,10 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
     std::string password;
     size_t password_index;
     size_t end_index;
+
     if (user.isLogged())
-    {
-        user.sendMessage(ERR_ALREADY_REGISTERED(user.getNickname()));
         return;
-    }
+
     if ((password_index = command.find(' ')) != std::string::npos)
     {
         if (command.find(' ', password_index + 1) != std::string::npos)
@@ -28,7 +27,7 @@ void Commands::pass_command(IrcServer &server, IrcClient &user, std::string comm
         {
             std::cout << "User " << user.getId() << " logged in succesfully!" << std::endl;
             user.setLogged();
-            user.sendMessage("You successfully logged in!\r\n");
+            user.sendMessage("Good password!\r\n");
         }
         else
         {
@@ -157,15 +156,15 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)
 {
-    (void)server;
-
 	if (!user.getNickname().empty())
 	{
 		user.sendMessage(ERR_ALREADY_REGISTERED(user.getNickname()));
 		return ;
 	}
+
     std::string nick = command.substr(command.find(" ") + 1);
     nick = nick.substr(0, nick.size() - 2);
+
 	if (!server.getClient(nick))
 		user.setNickname(nick);
 	else
@@ -203,6 +202,7 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
     std::stringstream ss(command);
     std::vector<std::string> args(3);
     Channel *channel;
+
     ss >> args[0];
     for (int i = 0; i < 3 && !ss.eof(); i++)
     {
@@ -255,8 +255,6 @@ void Commands::topic_command(IrcServer &server, IrcClient &user, std::string com
     std::vector<std::string> args(2);
     Channel *channel;
 
-    (void)server;
-    (void)user;
     ss >> args[0];
     for (int i = 0; i < 2 && !ss.eof(); i++)
     {
@@ -287,8 +285,6 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
     std::vector<std::string> args(2);
     Channel *channel;
 
-    (void)server;
-    (void)user;
     ss >> args[0];
     for (int i = 0; i < 2 && !ss.eof(); i++)
     {
