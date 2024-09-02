@@ -136,7 +136,7 @@ void IrcServer::serverLoop()
 			}
 			else
 			{
-				char buffer[256] = {0};
+				char buffer[1024] = {0};
 				int user_fd = this->events[i].data.fd;
 				int bytes_received = recv(user_fd, buffer, sizeof(buffer) - 1, 0);
 
@@ -255,6 +255,7 @@ IrcClient *IrcServer::getClient(std::string nickname)
 {
 	for (std::map<int, IrcClient *>::iterator it = this->clients.begin(); it != this->clients.end(); it++)
 	{
+		std::cout << "Client nickname : " << it->second->getNickname() << std::endl;
 		if (it->second->getNickname() == nickname)
 			return (it->second);
 	}

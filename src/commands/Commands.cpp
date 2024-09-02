@@ -162,8 +162,9 @@ void Commands::nick_command(IrcServer &server, IrcClient &user, std::string comm
 		return ;
 	}
 
-    std::string nick = command.substr(command.find(" ") + 1);
-    nick = nick.substr(0, nick.size() - 2);
+	size_t		nick_pos = command.find(" ") + 1;
+	size_t		end_pos = command.find_first_of("\r\n", nick_pos);
+    std::string nick = command.substr(nick_pos, end_pos - nick_pos);
 
 	if (!server.getClient(nick))
 		user.setNickname(nick);
