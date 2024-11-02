@@ -291,7 +291,7 @@ void Commands::kick_command(IrcServer &server, IrcClient &user, std::string comm
             user.sendMessage(ERR_NOTONCHANNEL(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), args[1]));
 }
 
 void Commands::topic_command(IrcServer &server, IrcClient &user, std::string command)
@@ -321,7 +321,7 @@ void Commands::topic_command(IrcServer &server, IrcClient &user, std::string com
             user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), args[1]));
 }
 
 void Commands::invite_command(IrcServer &server, IrcClient &user, std::string command)
@@ -362,7 +362,7 @@ void Commands::invite_command(IrcServer &server, IrcClient &user, std::string co
             user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), args[1]));
 }
 
 void operator_command(Channel *channel, IrcServer &server, IrcClient &user, std::vector<std::string> args)
@@ -494,5 +494,5 @@ void Commands::mode_command(IrcServer &server, IrcClient &user, std::string comm
             user.sendMessage(ERR_CHANOPRIVSNEEDED(user.getNickname(), channel->getName()));
     }
     else
-        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), channel->getName()));
+        user.sendMessage(ERR_NOSUCHCHANNEL(user.getNickname(), args[1]));
 }
