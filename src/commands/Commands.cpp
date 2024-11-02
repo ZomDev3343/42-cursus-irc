@@ -164,7 +164,6 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
             channel->broadcast(":" + bot->getNickname() + " JOIN " + channel->getName() + "\r\n");
         }
     }
-
     if (channel->isInviteOnly() && !channel->isClientOperator(&user) && !channel->isInvited(&user))
     {
         user.sendMessage(ERR_INVITEONLYCHAN(user.getNickname(), channel->getName()));
@@ -172,19 +171,16 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     }
     else
         channel->removeInvited(&user);
-
     if (channel->getMaxClients() <= channel->getClients().size())
     {
         user.sendMessage(ERR_CHANNELISFULL(user.getNickname(), channel->getName()));
         return;
     }
-
     if (channel->getPassword() != "" && channel->getPassword() != args[1])
     {
         user.sendMessage(ERR_BADCHANNELKEY(user.getNickname(), channel->getName()));
         return;
     }
-
     channel->addClient(&user);
     std::cout << "[IRC_REQUEST] :"
               << user.getNickname()

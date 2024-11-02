@@ -10,7 +10,6 @@
 PRIVMSG Bob :\x01DCC SEND filename ip port filesize\x01
 
 
-
 | **Action**                                    | **HexChat Command**                             | **nc Command**                                                                                                      |
 |-----------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
 | **Configuration / Connection & Authentication** | - Configure HexChat to connect to `127.0.0.1` on the chosen port. <br> - Use `/PASS mdp` to set the password. <br> - Set the nickname and username when prompted by HexChat. | ```nc 127.0.0.1 <port> ``` <br> ```PASS mdp ``` <br> ```NICK <nickname> ``` <br> ```USER <username> 0 * :<realname> ``` |

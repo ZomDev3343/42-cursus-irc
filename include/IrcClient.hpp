@@ -6,6 +6,8 @@
 
 # define MAX_PASSWORD_TRIES 3
 
+# define MAX_PASSWORD_TRIES 3
+
 class Channel;
 
 class IrcClient
