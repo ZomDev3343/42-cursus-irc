@@ -16,7 +16,7 @@ public:
     ~Bot();
 
     void sendHelloMessage(const std::string& channelName, const std::string& userName);
-    virtual void sendMessage(const std::string& message);
+    void sendMessage(std::string message);
 };
 
 #endif

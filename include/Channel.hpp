@@ -6,8 +6,8 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-#include "IrcClient.hpp"
 #include "IrcServer.hpp"
+#include "IrcClient.hpp"
 
 class Channel
 {

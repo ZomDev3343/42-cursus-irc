@@ -18,7 +18,7 @@ void Bot::sendHelloMessage(const std::string& channelName, const std::string& us
     this->sendMessage(message);
 }
 
-void Bot::sendMessage(const std::string& message)
+void Bot::sendMessage(std::string message)
 {
     size_t pos = message.find("PRIVMSG ");
     if (pos == std::string::npos)

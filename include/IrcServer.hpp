@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IRCSERVER_HPP
+#define IRCSERVER_HPP
 
 #define MAX_CLIENTS 10
 #include "Channel.hpp"
@@ -48,3 +49,5 @@ public:
 	void sendMessageFromBot(IrcClient* bot, const std::string& targetName, const std::string& message);
 
 };
+
+#endif
