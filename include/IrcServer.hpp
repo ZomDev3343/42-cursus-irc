@@ -5,6 +5,7 @@
 #include <sys/epoll.h>
 
 class IrcClient;
+class Bot;
 class IrcServer;
 class Channel;
 typedef void (*CommandFunction)(IrcServer &server, IrcClient &user, std::string command);
@@ -21,6 +22,7 @@ private:
 	std::map<int, IrcClient *> clients;
 	std::map<std::string, CommandFunction> commands;
 	std::vector<Channel *> _channels;
+	Bot* bot;
 
 	IrcServer();
 
@@ -37,6 +39,12 @@ public:
 	std::vector<Channel *> getChannels();
 	IrcClient *getClient(std::string nickname);
 	Channel *getChannel(std::string name);
+	std::string const& getPassword() const;
 
-	void interpret_message(int user_id, const char buffer[256], const int &msglen);
+	void	interpret_message(int user_id, std::string const& command);
+	void	close_client_connection(int user_id, std::string reason = "");
+
+	Bot* getBot();
+	void sendMessageFromBot(IrcClient* bot, const std::string& targetName, const std::string& message);
+
 };

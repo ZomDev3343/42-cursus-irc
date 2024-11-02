@@ -3,7 +3,10 @@
 #include <sys/socket.h>
 #include "../../include/IrcClient.hpp"
 #include "../../include/Commands.hpp"
+#include "../../include/RPL.hpp"
 #include "../../include/IrcServer.hpp"
+#include "../../include/Bot.hpp"
+
 
 IrcServer::IrcServer(int &port, std::string &password)
 {
@@ -16,10 +19,21 @@ IrcServer::IrcServer(int &port, std::string &password)
 	this->commands["USER"] = Commands::user_command;
 	this->commands["PART"] = Commands::part_command;
 	this->commands["PRIVMSG"] = Commands::privmsg_command;
+	this->commands["KICK"] = Commands::kick_command;
+	this->commands["TOPIC"] = Commands::topic_command;
+	this->commands["INVITE"] = Commands::invite_command;
+	this->commands["MODE"] = Commands::mode_command;
+	this->bot = new Bot("localhost", this);
+}
+
+Bot* IrcServer::getBot()
+{
+    return this->bot;
 }
 
 IrcServer::~IrcServer()
 {
+	delete this->bot;
 }
 
 bool IrcServer::setupServer()
@@ -63,7 +77,7 @@ bool IrcServer::setupServer()
 	}
 
 	int sockopt = 1;
-	setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(sockopt));
+	setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &sockopt, sizeof(sockopt));
 	listen(this->sockfd, MAX_CLIENTS);
 
 	this->epollfd = epoll_create1(0);
@@ -131,44 +145,41 @@ void IrcServer::serverLoop()
 			}
 			else
 			{
-				char buffer[256] = {0};
+				char buffer[1024] = {0};
 				int user_fd = this->events[i].data.fd;
 				int bytes_received = recv(user_fd, buffer, sizeof(buffer) - 1, 0);
 
 				if (bytes_received > 0)
 				{
-					buffer[bytes_received] = '\0';
-					std::cout << buffer << std::endl;
 					std::cout << "Message reçu de [" << user_fd << "]: " << buffer << std::endl;
 					this->processMessage(user_fd, buffer);
 				}
 				else
 				{
 					std::cout << "Bye bye mon boug " << this->clients[user_fd]->getId() << std::endl;
-					delete this->clients[user_fd];
-					this->clients.erase(user_fd);
-					close(user_fd);
+					this->close_client_connection(user_fd);
 				}
 			}
 		}
 	}
+	this->stopServer();
 }
 
 void IrcServer::processMessage(int user_fd, const char *message)
 {
 	std::string msg(message);
+	std::string buffer;
 
-	if (msg.find("\r\n") == std::string::npos)
-	{
-		this->clients[user_fd]->appendToBuffer(msg);
+	this->clients[user_fd]->appendToBuffer(msg);
+	buffer = this->clients[user_fd]->getBuffer();
+	if (buffer.find_first_of("\r\n") == std::string::npos)
 		return;
-	}
 
-	std::vector<std::string> commands = splitCommands(msg);
+	std::vector<std::string> commands = splitCommands(buffer);
 	for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); ++it)
-	{
-		this->interpret_message(user_fd, it->c_str(), it->size());
-	}
+		this->interpret_message(user_fd, *it);
+	if (this->clients[user_fd])
+		this->clients[user_fd]->clearBuffer();
 }
 
 std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
@@ -190,6 +201,8 @@ std::vector<std::string> IrcServer::splitCommands(const std::string &msg)
 void IrcServer::stopServer()
 {
 	std::cout << "Server is stopping..." << std::endl;
+	for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+		delete *it;
 	for (std::map<int, IrcClient *>::iterator iterator = this->clients.begin(); iterator != this->clients.end(); iterator++)
 	{
 		close(iterator->first);
@@ -200,9 +213,8 @@ void IrcServer::stopServer()
 	std::cout << "Server stopped!" << std::endl;
 }
 
-void IrcServer::interpret_message(int user_id, const char buffer[256], const int &msglen)
+void IrcServer::interpret_message(int user_id, std::string const &command)
 {
-	std::string msg_part(buffer, msglen);
 	IrcClient *user = this->clients[user_id];
 	std::string cmdname;
 
@@ -211,19 +223,21 @@ void IrcServer::interpret_message(int user_id, const char buffer[256], const int
 		std::cerr << "Error: Interpret Message function can't get the client with id [" << user_id << "]" << std::endl;
 		return;
 	}
-	if (user->appendMessagePart(msg_part))
-	{
-		std::string lastmsg = user->getLastMessage();
-		CommandFunction cmdf = NULL;
-		cmdname = lastmsg.substr(0, lastmsg.find_first_of(" \n\0"));
 
-		cmdf = this->commands[cmdname];
-		if (cmdf != NULL)
-			cmdf(*this, *user, lastmsg);
-		user->clearLastMessage();
+	CommandFunction cmdf = NULL;
+	cmdname = command.substr(0, command.find_first_of(" \r\n"));
+
+	if (cmdname != "CAP" && cmdname != "PASS" && !user->isLogged())
+	{
+		std::cerr << "ERROR: Unauthorized connection, needs password!" << std::endl;
+		user->sendMessage(ERR_NOTREGISTERED(user->getNickname()));
 	}
 	else
-		std::cout << "INTERPRET MESSAGE: Got just a part of the command !" << std::endl;
+	{
+		cmdf = this->commands[cmdname];
+		if (cmdf != NULL)
+			cmdf(*this, *user, command);
+	}
 }
 
 std::vector<Channel *> IrcServer::getChannels()
@@ -231,7 +245,7 @@ std::vector<Channel *> IrcServer::getChannels()
 	return (this->_channels);
 }
 
-void	IrcServer::addChannel(Channel* channel)
+void IrcServer::addChannel(Channel *channel)
 {
 	this->_channels.push_back(channel);
 }
@@ -250,8 +264,53 @@ IrcClient *IrcServer::getClient(std::string nickname)
 {
 	for (std::map<int, IrcClient *>::iterator it = this->clients.begin(); it != this->clients.end(); it++)
 	{
+		std::cout << "Client nickname : " << it->second->getNickname() << std::endl;
 		if (it->second->getNickname() == nickname)
 			return (it->second);
 	}
 	return (NULL);
+}
+
+std::string const &IrcServer::getPassword() const
+{
+	return this->password;
+}
+
+void IrcServer::close_client_connection(int user_id, std::string reason)
+{
+	if (this->clients[user_id] != NULL)
+	{
+		for (std::vector<Channel *>::iterator it = this->_channels.begin(); it != this->_channels.end(); it++)
+		{
+			(*it)->removeClient(this->clients[user_id]);
+			(*it)->removeOperator(this->clients[user_id]);
+		}
+		delete this->clients[user_id];
+		this->clients.erase(user_id);
+		close(user_id);
+		if (!reason.empty())
+			std::cout << "Kicked User " << user_id << " because " << reason << std::endl;
+	}
+}
+
+void IrcServer::sendMessageFromBot(IrcClient* bot, const std::string& targetName, const std::string& message)
+{
+    std::string formattedMessage = ":" + bot->getNickname() + " PRIVMSG " + targetName + " :" + message + "\r\n";
+
+    if (targetName[0] == '#')
+    {
+        Channel* channel = getChannel(targetName);
+        if (channel)
+        {
+            channel->broadcast(formattedMessage);
+        }
+    }
+    else
+    {
+        IrcClient* client = getClient(targetName);
+        if (client)
+        {
+            client->sendMessage(formattedMessage);
+        }
+    }
 }

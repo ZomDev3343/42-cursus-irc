@@ -15,8 +15,13 @@ private:
   std::string _name;
   std::vector<IrcClient *> _clients;
   std::vector<IrcClient *> _operators;
+  std::vector<IrcClient *> _invited;
 
   size_t _maxClients;
+  std::string _topic;
+  bool _topicOnlyOperator;
+  bool _inviteOnly;
+  std::string _password;
   Channel();
 
 public:
@@ -28,8 +33,23 @@ public:
   void addClient(IrcClient *client);
   void removeClient(IrcClient *client);
   void addOperator(IrcClient *client);
+  void setInviteOnly(bool inviteOnly);
+  void setTopicOnlyOperator(bool topicOnlyOperator);
+  bool isTopicOnlyOperator();
+  bool isInviteOnly();
+  void AddInvited(IrcClient *client);
+  void removeInvited(IrcClient *client);
+  void setMaxClients(int maxClients);
+  bool isInvited(IrcClient *client);
+  void setPassword(std::string password);
+  std::string getPassword();
+  size_t getMaxClients();
+  void setTopic(std::string topic);
   void removeOperator(IrcClient *client);
   void printClient();
+  bool isClientOperator(IrcClient *client);
+  bool hasClientJoined(IrcClient *client);
+  std::vector<IrcClient *> &getClients();
 
   std::string getName();
 };

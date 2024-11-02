@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include "Channel.hpp"
+
+# define MAX_PASSWORD_TRIES 3
 
 class Channel;
 
@@ -14,36 +15,38 @@ private:
     std::string _hostname;
     std::string _nickname;
     std::string _username;
-    std::string _lastmsg;
-    std::string buffer;
+    std::string _buffer;
 
-    bool _enregister;
+    bool _logged;
+
+    int _password_tries;
 
     Channel *_channel;
 
 public:
     IrcClient(int id, std::string host);
-    ~IrcClient();
+    virtual ~IrcClient();
 
     int const &getId() const;
     std::string const &getHostname() const;
     std::string const &getNickname() const;
-    std::string const &getLastMessage() const;
     std::string getUsername() const;
+    int const& getTries() const;
+    Channel *getChannel();
+    std::string getBuffer() const;
 
     void setUsername(std::string username);
     void setNickname(std::string newNickname);
-    void setLastMessage(std::string newLastMessage);
     void setHostname(std::string newHost);
     void setChannel(Channel *channel);
-    Channel *getChannel();
-    bool is_enregister();
-    bool appendMessagePart(std::string &msg_part);
-    void sendMessage(std::string message);
-    void clearLastMessage();
+    void setLogged();
+
+    bool isLogged() const;
+
+    virtual void sendMessage(std::string message);
     void appendToBuffer(const std::string& msg);
-    std::string getBuffer() const;
     void clearBuffer();
+    void incrementTries();
 };
 
 #endif

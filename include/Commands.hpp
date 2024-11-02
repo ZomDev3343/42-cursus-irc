@@ -27,4 +27,14 @@ public:
 													 IrcClient &user, std::string command);
 	static void privmsg_command(IrcServer &server,
 															IrcClient &user, std::string command);
+	static void kick_command(IrcServer &server,
+													 IrcClient &user, std::string command);
+	static void topic_command(IrcServer &server,
+														IrcClient &user, std::string command);
+	static void invite_command(IrcServer &server,
+														 IrcClient &user, std::string command);
+	static void mode_command(IrcServer &server,
+													 IrcClient &user, std::string command);
+	static void handleDCC(IrcServer &server, IrcClient &user, const std::string &target, const std::string &ctcpMessage);
+
 };

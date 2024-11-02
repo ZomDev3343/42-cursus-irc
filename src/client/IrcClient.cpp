@@ -7,6 +7,8 @@
 IrcClient::IrcClient(int id, std::string host)
     : _id(id), _hostname(host), _channel(NULL)
 {
+    this->_logged = false;
+    this->_password_tries = 0;
 }
 
 IrcClient::~IrcClient()
@@ -36,29 +38,6 @@ void IrcClient::setNickname(std::string newNickname)
     }
 }
 
-std::string const &IrcClient::getLastMessage() const
-{
-    return this->_lastmsg;
-}
-
-bool IrcClient::appendMessagePart(std::string &msg_part)
-{
-    std::size_t endcharpos;
-    this->_lastmsg.append(msg_part);
-    endcharpos = this->_lastmsg.find('\r');
-    if ((endcharpos != this->_lastmsg.npos && this->_lastmsg[endcharpos + 1] == '\n') ||
-        this->_lastmsg.find('\n') != this->_lastmsg.npos)
-    {
-        return true;
-    }
-    return false;
-}
-
-void IrcClient::clearLastMessage()
-{
-    this->_lastmsg.clear();
-}
-
 void IrcClient::sendMessage(std::string message)
 {
     std::string formattedMessage = message;
@@ -74,11 +53,6 @@ void IrcClient::setHostname(std::string newHost)
     this->_hostname = newHost;
 }
 
-void IrcClient::setLastMessage(std::string newLastMessage)
-{
-    this->_lastmsg = newLastMessage;
-}
-
 void IrcClient::setChannel(Channel *channel)
 {
     this->_channel = channel;
@@ -89,9 +63,9 @@ Channel *IrcClient::getChannel()
     return this->_channel;
 }
 
-bool IrcClient::is_enregister()
+bool IrcClient::isLogged() const
 {
-    return this->_enregister;
+    return this->_logged;
 }
 
 void IrcClient::setUsername(std::string username)
@@ -105,14 +79,29 @@ std::string IrcClient::getUsername() const
 }
 
 void IrcClient::appendToBuffer(const std::string& msg) {
-        buffer += msg;
+        _buffer += msg;
 }
 
 std::string IrcClient::getBuffer() const {
-        return buffer;
+        return _buffer;
 }
 
 void IrcClient::clearBuffer()
 {
-	buffer.clear();
+	_buffer.clear();
+}
+
+void IrcClient::setLogged()
+{
+    this->_logged = true;
+}
+
+int const& IrcClient::getTries() const
+{
+    return this->_password_tries;
+}
+
+void IrcClient::incrementTries()
+{
+    this->_password_tries++;
 }
