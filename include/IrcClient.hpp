@@ -18,6 +18,7 @@ private:
     std::string _buffer;
 
     bool _logged;
+    bool _is_bot;
 
     int _password_tries;
 
@@ -34,12 +35,14 @@ public:
     int const& getTries() const;
     Channel *getChannel();
     std::string getBuffer() const;
+    bool isBot() const;
 
     void setUsername(std::string username);
     void setNickname(std::string newNickname);
     void setHostname(std::string newHost);
     void setChannel(Channel *channel);
     void setLogged();
+    void setIsBot(bool value);
 
     bool isLogged() const;
 

@@ -9,6 +9,7 @@ IrcClient::IrcClient(int id, std::string host)
 {
     this->_logged = false;
     this->_password_tries = 0;
+    this->setIsBot(false);
 }
 
 IrcClient::~IrcClient()
@@ -18,6 +19,10 @@ IrcClient::~IrcClient()
 int const &IrcClient::getId() const
 {
     return this->_id;
+}
+
+bool IrcClient::isBot() const {
+    return this->_is_bot;
 }
 
 std::string const &IrcClient::getHostname() const
@@ -36,6 +41,10 @@ void IrcClient::setNickname(std::string newNickname)
     {
         this->_nickname = newNickname;
     }
+}
+
+void IrcClient::setIsBot(bool value) {
+    this->_is_bot = value;
 }
 
 void IrcClient::sendMessage(std::string message)

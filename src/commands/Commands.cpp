@@ -189,15 +189,13 @@ void Commands::join_command(IrcServer &server, IrcClient &user, std::string comm
     channel->broadcast(":" + user.getNickname() + " JOIN " + channel->getName() + "\r\n");
 
     for (std::vector<IrcClient *>::iterator it = channel->getClients().begin(); it != channel->getClients().end(); it++)
-        if (*it != &user)
+        if (*it != &user && !(*it)->isBot())
             user.sendMessage(":" + (*it)->getNickname() + " JOIN " + channel->getName() + "\r\n");
 
     // Make the bot send a greeting message to the channel
     Bot* bot = server.getBot();
     if (bot)
-    {
         bot->sendHelloMessage(channel->getName(), user.getNickname());
-    }
 }
 
 void Commands::nick_command(IrcServer &server, IrcClient &user, std::string command)

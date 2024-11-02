@@ -6,6 +6,7 @@ Bot::Bot(const std::string& host, IrcServer* server)
     this->setNickname("Bot");
     this->setUsername("Bot");
     this->setLogged();
+    this->setIsBot(true);
 }
 
 Bot::~Bot()

@@ -23,7 +23,8 @@ void Channel::broadcast(std::string message)
 {
   for (std::vector<IrcClient *>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
   {
-    (*it)->sendMessage(message);
+    if (!(*it)->isBot())
+      (*it)->sendMessage(message);
   }
 }
 
@@ -31,7 +32,7 @@ void Channel::broadcast(std::string message, IrcClient *client)
 {
   for (std::vector<IrcClient *>::iterator it = this->_clients.begin(); it != this->_clients.end(); it++)
   {
-    if ((*it) != client)
+    if ((*it) != client && !(*it)->isBot())
       (*it)->sendMessage(message);
   }
 }
